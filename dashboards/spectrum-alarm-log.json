@@ -1,0 +1,700 @@
+{
+  "uid": "spectrum-alarm-log",
+  "title": "Alarm Log",
+  "tags": [
+    "operational-reports",
+    "alarm"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "condition",
+        "type": "custom",
+        "label": "Alarm Condition",
+        "query": "Critical : 3,Major : 2,Minor : 1,Maintenance : 4",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "1,2,3,4",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          },
+          {
+            "text": "Critical",
+            "value": "3",
+            "selected": false
+          },
+          {
+            "text": "Major",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Minor",
+            "value": "1",
+            "selected": false
+          },
+          {
+            "text": "Maintenance",
+            "value": "4",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "minDuration",
+        "type": "custom",
+        "label": "Min Duration (sec)",
+        "query": "0,60,300,600,3600",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "300",
+          "value": "300"
+        },
+        "options": [
+          {
+            "text": "0",
+            "value": "0",
+            "selected": false
+          },
+          {
+            "text": "60",
+            "value": "60",
+            "selected": false
+          },
+          {
+            "text": "300",
+            "value": "300",
+            "selected": true
+          },
+          {
+            "text": "600",
+            "value": "600",
+            "selected": false
+          },
+          {
+            "text": "3600",
+            "value": "3600",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "cause",
+        "type": "textbox",
+        "label": "Alarm Cause (filter)",
+        "query": "%",
+        "current": {
+          "text": "%",
+          "value": "%"
+        },
+        "options": [],
+        "description": "Substring match. Use 'or' for any term (e.g. CDP or DEVICE), 'and' for all terms (e.g. CDP and DUPLEX). Blank or % = all."
+      },
+      {
+        "name": "devices",
+        "type": "query",
+        "label": "Devices",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "definition": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "-1",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS total FROM reporting.alarminfo ai JOIN reporting.alarmtitle atf ON atf.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id IN ($condition) AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND atf.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND (((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR (ai.set_time < $__timeFrom() AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR ((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time IS NULL OR ai.clear_time > $__timeTo())))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Critical",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 0,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS critical FROM reporting.alarminfo ai JOIN reporting.alarmtitle atf ON atf.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id=3 AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND atf.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND (((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR (ai.set_time < $__timeFrom() AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR ((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time IS NULL OR ai.clear_time > $__timeTo())))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Major",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 0,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS major FROM reporting.alarminfo ai JOIN reporting.alarmtitle atf ON atf.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id=2 AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND atf.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND (((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR (ai.set_time < $__timeFrom() AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR ((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time IS NULL OR ai.clear_time > $__timeTo())))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Minor",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 0,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS minor FROM reporting.alarminfo ai JOIN reporting.alarmtitle atf ON atf.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id=1 AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND atf.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND (((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR (ai.set_time < $__timeFrom() AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR ((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time IS NULL OR ai.clear_time > $__timeTo())))"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Devices w/ Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT ai.model_key) AS devices FROM reporting.alarminfo ai JOIN reporting.alarmtitle atf ON atf.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id IN ($condition) AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND atf.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND (((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR (ai.set_time < $__timeFrom() AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR ((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time IS NULL OR ai.clear_time > $__timeTo())))"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Alarms per Day",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 1,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "axisSoftMin": 0
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Critical"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Major"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Minor"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Maintenance"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(ai.set_time,'1d') AS time, SUM(ai.condition_id=3) AS `Critical`, SUM(ai.condition_id=2) AS `Major`, SUM(ai.condition_id=1) AS `Minor`, SUM(ai.condition_id=4) AS `Maintenance` FROM reporting.alarminfo ai JOIN reporting.alarmtitle atf ON atf.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id IN ($condition) AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR atf.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND atf.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND $__timeFilter(ai.set_time) GROUP BY 1 ORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Alarm Log",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 24,
+        "h": 14
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Condition"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Critical": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Major": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Minor": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Device detail: ${__value.text}",
+                    "url": "/d/spectrum-device-detail/spectrum-device-detail?var-device=${__value.text}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Alarm Unique ID"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Alarm Cause"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Alarm detail",
+                    "url": "/d/spectrum-alarm-detail/spectrum-alarm-detail?var-alarmId=${__data.fields[\"Alarm Unique ID\"]}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Start Time",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ai.set_time AS `Start Time`, ai.clear_time AS `End Time`, ac.condition_name AS `Condition`, CONCAT(FLOOR(TIMESTAMPDIFF(SECOND,ai.set_time,COALESCE(ai.clear_time,NOW()))/86400),' Days ',LPAD(FLOOR(MOD(TIMESTAMPDIFF(SECOND,ai.set_time,COALESCE(ai.clear_time,NOW())),86400)/3600),2,'0'),':',LPAD(FLOOR(MOD(TIMESTAMPDIFF(SECOND,ai.set_time,COALESCE(ai.clear_time,NOW())),3600)/60),2,'0'),':',LPAD(MOD(TIMESTAMPDIFF(SECOND,ai.set_time,COALESCE(ai.clear_time,NOW())),60),2,'0')) AS `Duration`, e.entity_name AS `Name`, at.title AS `Alarm Cause`, ai.alarm_id AS `Alarm Unique ID` FROM reporting.alarminfo ai JOIN reporting.entity e ON e.current_model_key=ai.model_key JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id IN ($condition) AND ( TRIM('$cause') IN ('','%') OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% and %' AND at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',1),' and ',-1),'%') AND at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',2),' and ',-1),'%') AND at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',3),' and ',-1),'%') AND at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' and ',4),' and ',-1),'%') ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) LIKE '% or %' AND ( at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',1),' or ',-1),'%') OR at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',2),' or ',-1),'%') OR at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',3),' or ',-1),'%') OR at.title LIKE CONCAT('%',SUBSTRING_INDEX(SUBSTRING_INDEX(LOWER('$cause'),' or ',4),' or ',-1),'%') ) ) OR ( LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% and %' AND LOWER(CONCAT(' ',TRIM('$cause'),' ')) NOT LIKE '% or %' AND at.title LIKE CONCAT('%','$cause','%') ) ) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR ai.model_key IN ($devices)) AND (ai.clear_time IS NULL OR TIMESTAMPDIFF(SECOND, ai.set_time, ai.clear_time) > $minDuration) AND (((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR (ai.set_time < $__timeFrom() AND (ai.clear_time >= $__timeFrom() AND ai.clear_time < $__timeTo())) OR ((ai.set_time >= $__timeFrom() AND ai.set_time < $__timeTo()) AND (ai.clear_time IS NULL OR ai.clear_time > $__timeTo()))) ORDER BY ai.set_time DESC LIMIT 500"
+        }
+      ]
+    }
+  ]
+}

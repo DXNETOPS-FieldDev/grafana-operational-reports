@@ -1,0 +1,449 @@
+{
+  "uid": "spectrum-alarm-top-devices",
+  "title": "Top-N Devices & Models with Most Alarms",
+  "tags": [
+    "operational-reports",
+    "alarm"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "condition",
+        "type": "custom",
+        "label": "Alarm Condition",
+        "query": "Critical : 3,Major : 2,Minor : 1,Maintenance : 4",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "1,2,3,4",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          },
+          {
+            "text": "Critical",
+            "value": "3",
+            "selected": false
+          },
+          {
+            "text": "Major",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Minor",
+            "value": "1",
+            "selected": false
+          },
+          {
+            "text": "Maintenance",
+            "value": "4",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "topN",
+        "type": "custom",
+        "label": "Top N",
+        "query": "5,10,20,50,100",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "20",
+          "value": "20"
+        },
+        "options": [
+          {
+            "text": "5",
+            "value": "5",
+            "selected": false
+          },
+          {
+            "text": "10",
+            "value": "10",
+            "selected": false
+          },
+          {
+            "text": "20",
+            "value": "20",
+            "selected": true
+          },
+          {
+            "text": "50",
+            "value": "50",
+            "selected": false
+          },
+          {
+            "text": "100",
+            "value": "100",
+            "selected": false
+          }
+        ],
+        "allowCustomValue": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS total FROM reporting.alarminfo ai WHERE ai.condition_id IN ($condition) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Devices w/ Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT ai.model_key) AS devices FROM reporting.alarminfo ai WHERE ai.condition_id IN ($condition) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Critical Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS critical FROM reporting.alarminfo ai WHERE ai.condition_id=3 AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "barchart",
+      "title": "Top $topN Devices & Models by Alarm Count",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Name",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT m.model_name AS `Name`, COUNT(*) AS `Alarms` FROM reporting.alarminfo ai JOIN reporting.model m ON m.model_key=ai.model_key WHERE ai.condition_id IN ($condition) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) GROUP BY m.model_name ORDER BY `Alarms` DESC LIMIT $topN"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Top $topN Devices & Models with Most Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 24,
+        "h": 12
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Alarm Count"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Device detail: ${__value.text}",
+                    "url": "/d/spectrum-device-detail/spectrum-device-detail?var-device=${__value.text}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Percentage of Total"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Alarm Count",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT m.model_name AS `Name`, mt.mtype_name AS `Type`, mc.mclass_name AS `Class`, COUNT(*) AS `Alarm Count`, ROUND(100*COUNT(*)/g.tot,2) AS `Percentage of Total`, ROUND(COUNT(*)/GREATEST(1,TIMESTAMPDIFF(DAY,$__timeFrom(),$__timeTo()))) AS `Frequency (/Day)`, SUM(ai.condition_id=3) AS `Critical`, SUM(ai.condition_id=2) AS `Major`, SUM(ai.condition_id=1) AS `Minor` FROM reporting.alarminfo ai JOIN reporting.model m ON m.model_key=ai.model_key JOIN reporting.modeltype mt ON mt.mtype_h=m.mtype_h LEFT JOIN reporting.devicemodel dm ON dm.model_key=ai.model_key LEFT JOIN reporting.modelclass mc ON mc.model_class=dm.model_class CROSS JOIN (SELECT COUNT(*) tot FROM reporting.alarminfo ai2 WHERE ai2.condition_id IN ($condition) AND (-1 IN ($group) OR ai2.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai2.set_time)) g WHERE ai.condition_id IN ($condition) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) GROUP BY m.model_name, mt.mtype_name, mc.mclass_name, g.tot ORDER BY `Alarm Count` DESC LIMIT $topN"
+        }
+      ]
+    }
+  ]
+}

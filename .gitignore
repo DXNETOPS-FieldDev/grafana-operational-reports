@@ -1,0 +1,18 @@
+# Claude tooling
+.claude/
+.agents/
+skills-lock.json
+
+# Playwright logs
+.playwright-mcp/
+
+# Internal working files
+dev-backups/
+jasper-live/
+*.png
+
+# macOS
+.DS_Store
+
+# Local config
+.npmrc

@@ -1,0 +1,303 @@
+{
+  "uid": "spectrum-port-assets-customizable",
+  "title": "Current Port Assets (Customizable)",
+  "tags": [
+    "operational-reports",
+    "asset"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "devices",
+        "type": "query",
+        "label": "Devices",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "definition": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "-1",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Ports",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS total FROM reporting.interfacemodel im WHERE im.destroy_time IS NULL AND (-1 IN ($group) OR im.device_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR im.device_model_key IN ($devices))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Ports Up",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS up FROM reporting.interfacemodel im WHERE im.destroy_time IS NULL AND im.port_link_status=0 AND (-1 IN ($group) OR im.device_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR im.device_model_key IN ($devices))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Port Assets \u2014 sortable; click any column header",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 22
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Link Status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Good": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Down": {
+                        "color": "red",
+                        "index": 1
+                      },
+                      "Other": {
+                        "color": "yellow",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Speed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Idle Days"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT e.entity_name AS `Port`, dm.model_name AS `Device`, mc.mclass_name AS `Class`, im.port_type AS `Port Type`, NULLIF(im.port_desc,'') AS `Description`, im.mac AS `MAC`, NULLIF(im.ifalias,'') AS `If Alias`, ipl.name AS `Link Status`, pd.port_duplex_value AS `Duplex`, im.if_speed AS `Speed`, im.datelastsignificanttraffic AS `Last Traffic`, TRUNCATE(TIMESTAMPDIFF(HOUR,im.datelastsignificanttraffic,NOW())/24,0) AS `Idle Days` FROM reporting.interfacemodel im JOIN reporting.entity e ON e.current_model_key=im.model_key JOIN reporting.modelclass mc ON mc.model_class=im.model_class JOIN reporting.ipls_names ipl ON ipl.status=im.port_link_status JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key JOIN reporting.portduplex pd ON pd.port_duplex_id=im.port_duplex_id WHERE im.destroy_time IS NULL AND (-1 IN ($group) OR im.device_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR im.device_model_key IN ($devices)) ORDER BY e.entity_name"
+        }
+      ]
+    }
+  ]
+}

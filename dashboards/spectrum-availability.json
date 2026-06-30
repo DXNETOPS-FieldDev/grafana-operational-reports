@@ -1,0 +1,638 @@
+{
+  "uid": "spectrum-availability",
+  "title": "Device Availability",
+  "tags": [
+    "operational-reports",
+    "availability"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "topN",
+        "type": "custom",
+        "label": "Top N",
+        "query": "5,10,20,50,100",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "20",
+          "value": "20"
+        },
+        "options": [
+          {
+            "text": "5",
+            "value": "5",
+            "selected": false
+          },
+          {
+            "text": "10",
+            "value": "10",
+            "selected": false
+          },
+          {
+            "text": "20",
+            "value": "20",
+            "selected": true
+          },
+          {
+            "text": "50",
+            "value": "50",
+            "selected": false
+          },
+          {
+            "text": "100",
+            "value": "100",
+            "selected": false
+          }
+        ],
+        "allowCustomValue": true
+      },
+      {
+        "name": "outageType",
+        "type": "custom",
+        "label": "Outage Type",
+        "query": "Unplanned : 1,Planned : 2,Exempt : 3",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "1,2,3",
+        "current": {
+          "selected": true,
+          "text": [
+            "Unplanned"
+          ],
+          "value": [
+            "1"
+          ]
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": false
+          },
+          {
+            "text": "Unplanned",
+            "value": "1",
+            "selected": true
+          },
+          {
+            "text": "Planned",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Exempt",
+            "value": "3",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "deviceType",
+        "type": "query",
+        "label": "Device Type",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT DISTINCT device_type FROM reporting.devicemodel WHERE device_type IS NOT NULL AND destroy_time IS NULL ORDER BY 1",
+        "definition": "SELECT DISTINCT device_type FROM reporting.devicemodel WHERE device_type IS NOT NULL AND destroy_time IS NULL ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      },
+      {
+        "name": "devices",
+        "type": "query",
+        "label": "Devices",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "definition": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "-1",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Fleet Availability",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT 100*(1 - (SELECT COALESCE(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),0) FROM reporting.modeloutage mo JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom())) / ((SELECT COUNT(DISTINCT dm.model_key) FROM reporting.devicemodel dm WHERE dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR dm.model_key IN ($devices))) * TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo()))) AS fleet_availability_pct"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Outages",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS outages FROM reporting.modeloutage mo JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom())"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Devices Affected",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT mo.model_key) AS devices_affected FROM reporting.modeloutage mo JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom())"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Total Downtime",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))))/3600,1) AS downtime_hrs FROM reporting.modeloutage mo JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom())"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Outages per Day",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 30,
+            "lineWidth": 2,
+            "showPoints": "never",
+            "gradientMode": "opacity"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(mo.start_time,'1d') AS time, COUNT(*) AS outages FROM reporting.modeloutage mo JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND $__timeFilter(mo.start_time) GROUP BY 1 ORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "barchart",
+      "title": "Device Availability \u2014 Total Downtime (min)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "m",
+          "color": {
+            "mode": "continuous-RdYlGr"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Device",
+        "showValue": "auto",
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT e.entity_name AS Device, ROUND(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))))/60) AS `Downtime` FROM reporting.modeloutage mo JOIN reporting.entity e ON e.current_model_key=mo.model_key JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom()) GROUP BY e.entity_name HAVING SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))) > 0 ORDER BY `Downtime` DESC LIMIT $topN"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Top $topN Least Available Devices",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 12
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Availability %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 99
+                    },
+                    {
+                      "color": "green",
+                      "value": 99.9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Number of Outages"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Device detail: ${__value.text}",
+                    "url": "/d/spectrum-device-detail/spectrum-device-detail?var-device=${__value.text}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT e.entity_name AS `Name`, dm.IP AS `IP`, dm.device_type AS `Device Type`, CONCAT(FLOOR(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))))/86400),' Days ',LPAD(FLOOR(MOD(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),86400)/3600),2,'0'),':',LPAD(FLOOR(MOD(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),3600)/60),2,'0'),':',LPAD(MOD(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),60),2,'0')) AS `Total Downtime`, COUNT(*) AS `Number of Outages`, ROUND(100*(1 - SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))))/TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo())),4) AS `Availability %` FROM reporting.modeloutage mo JOIN reporting.entity e ON e.current_model_key=mo.model_key JOIN reporting.devicemodel dm ON dm.model_key=mo.model_key WHERE mo.outage_type IN ($outageType) AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR mo.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR mo.model_key IN ($devices)) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom()) GROUP BY e.entity_name, dm.IP, dm.device_type ORDER BY SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))) DESC LIMIT $topN"
+        }
+      ]
+    }
+  ]
+}

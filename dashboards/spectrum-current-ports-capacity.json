@@ -1,0 +1,634 @@
+{
+  "uid": "spectrum-current-ports-capacity",
+  "title": "Current Ports \u2014 Capacity & Idle",
+  "tags": [
+    "operational-reports",
+    "asset"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "deviceType",
+        "type": "query",
+        "label": "Device Type",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT DISTINCT device_type FROM reporting.devicemodel WHERE device_type IS NOT NULL AND destroy_time IS NULL ORDER BY 1",
+        "definition": "SELECT DISTINCT device_type FROM reporting.devicemodel WHERE device_type IS NOT NULL AND destroy_time IS NULL ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      },
+      {
+        "name": "idleDays",
+        "type": "textbox",
+        "label": "Ports available after idle for (days)",
+        "query": "30",
+        "current": {
+          "selected": true,
+          "text": "30",
+          "value": "30"
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 10,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Current Ports \u2014 Capacity & Idle.** Ports are marked **Available** (reclaimable) if idle for more than **$idleDays days**; **In Use** = link operational (Good)."
+      }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Managed Assets",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT dm.model_key) AS v FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group)))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Total Ports",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 2,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS v FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group)))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Ports Available (idle > $idleDays d)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 2,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT SUM(DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) > $idleDays) AS v FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group)))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Ports Unavailable",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 2,
+        "w": 4,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT SUM(im.dateLastSignificantTraffic IS NULL OR DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) <= $idleDays) AS v FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group)))"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "% Available",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 19,
+        "y": 2,
+        "w": 5,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 25
+              },
+              {
+                "color": "orange",
+                "value": 50
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(100*SUM(DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) > $idleDays)/COUNT(*)) AS v FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group)))"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Current Ports Summary (by Device)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 24,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "% of Ports Available"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ports Available"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Device detail: ${__value.text}",
+                    "url": "/d/spectrum-device-detail/spectrum-device-detail?var-device=${__value.text}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "% of Ports Available",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": [
+            "Total ports",
+            "Ports In Use",
+            "Ports Available"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT dm.device_type AS `Device Type`, e.entity_name AS `Name`, COUNT(*) AS `Total ports`, SUM(im.port_link_status=0) AS `Ports In Use`, SUM(DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) > $idleDays) AS `Ports Available`, ROUND(100*SUM(DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) > $idleDays)/COUNT(*)) AS `% of Ports Available`, ROUND(AVG(DATEDIFF(CURDATE(),im.dateLastSignificantTraffic))) AS `Average Days Idle` FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key JOIN reporting.entity e ON e.current_model_key=dm.model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) GROUP BY dm.device_type, e.entity_name ORDER BY `% of Ports Available` DESC, `Name`"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Current Ports Detail (idle threshold $idleDays days)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 12
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Port Speed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bps"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Port Status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "In Use": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Not In Use": {
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Is Port Available?"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Yes": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "No": {
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Days Idle",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT im.model_name AS `Port Name`, NULLIF(im.port_desc,'') AS `Port Description`, im.port_type AS `Port Type`, im.if_speed AS `Port Speed`, CASE WHEN im.port_link_status=0 THEN 'In Use' ELSE 'Not In Use' END AS `Port Status`, DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) AS `Days Idle`, CASE WHEN DATEDIFF(CURDATE(),im.dateLastSignificantTraffic) > $idleDays THEN 'Yes' ELSE 'No' END AS `Is Port Available?` FROM reporting.interfacemodel im JOIN reporting.devicemodel dm ON dm.model_key=im.device_model_key WHERE im.destroy_time IS NULL AND dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY `Days Idle` DESC LIMIT 1000"
+        }
+      ]
+    }
+  ]
+}

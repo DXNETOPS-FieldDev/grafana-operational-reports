@@ -1,0 +1,308 @@
+{
+  "uid": "spectrum-chassis-assets",
+  "title": "Current Chassis-based Assets",
+  "tags": [
+    "operational-reports",
+    "asset"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "devices",
+        "type": "query",
+        "label": "Devices",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "definition": "SELECT e.entity_name AS __text, e.current_model_key AS __value FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE dm.destroy_time IS NULL AND (-1 IN ($group) OR e.current_model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "-1",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Chassis Modules",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS modules FROM reporting.devicemodule dmod JOIN reporting.devicemodel dm ON dm.model_key=dmod.model_key WHERE dm.destroy_time IS NULL AND dmod.physical_modelname<>'' AND dmod.physical_class IN (0,3,9) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR dm.model_key IN ($devices))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Chassis Devices",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT dm.model_key) AS devices FROM reporting.devicemodule dmod JOIN reporting.devicemodel dm ON dm.model_key=dmod.model_key WHERE dm.destroy_time IS NULL AND dmod.physical_modelname<>'' AND dmod.physical_class IN (0,3,9) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR dm.model_key IN ($devices))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "piechart",
+      "title": "Chassis Modules by Vendor",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT v.vendor_name AS `Vendor`, COUNT(*) AS `Modules` FROM reporting.devicemodule dmod JOIN reporting.devicemodel dm ON dm.model_key=dmod.model_key JOIN reporting.vendor v ON v.vendor=dm.vendor WHERE dm.destroy_time IS NULL AND dmod.physical_modelname<>'' AND dmod.physical_class IN (0,3,9) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR dm.model_key IN ($devices)) GROUP BY v.vendor_name ORDER BY `Modules` DESC"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Chassis Modules",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 22
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Device detail: ${__value.text}",
+                    "url": "/d/spectrum-device-detail/spectrum-device-detail?var-device=${__value.text}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT e.entity_name AS `Name`, dm.IP, v.vendor_name AS `Vendor`, dmod.physical_modelname AS `Module`, dmod.serial_nbr AS `Serial`, dmod.software_rev AS `Software Rev`, dmod.physical_index AS `Index` FROM reporting.devicemodule dmod JOIN reporting.devicemodel dm ON dm.model_key=dmod.model_key JOIN reporting.vendor v ON v.vendor=dm.vendor JOIN reporting.entity e ON e.current_model_key=dm.model_key WHERE dm.destroy_time IS NULL AND dmod.physical_modelname<>'' AND dmod.physical_class IN (0,3,9) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND (-1 IN ($devices) OR dm.model_key IN ($devices)) ORDER BY v.vendor_name, dm.IP, dmod.physical_index"
+        }
+      ]
+    }
+  ]
+}

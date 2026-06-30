@@ -1,0 +1,518 @@
+{
+  "uid": "spectrum-alarm-mttr",
+  "title": "Alarm Mean Time to Respond",
+  "tags": [
+    "operational-reports",
+    "alarm"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Number Of Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) v FROM reporting.alarminfo ai WHERE (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "System Cleared",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) v FROM reporting.alarminfo ai WHERE ai.clear_user_key=1 AND ai.clear_time IS NOT NULL AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Ongoing Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) v FROM reporting.alarminfo ai WHERE ai.clear_time IS NULL AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Avg Time to First Action (min)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(AVG(NULLIF(LEAST(COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.ack_time),999999999),COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.first_assigned_time),999999999),COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.set_troubleticket_time),999999999),COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.clear_time),999999999)),999999999))/60,2) v FROM reporting.alarminfo ai WHERE (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "type": "barchart",
+      "title": "Mean Time to Respond by Severity",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Condition",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ac.condition_name AS `Condition`, ROUND(AVG(CASE WHEN ai.ack_time IS NOT NULL THEN TIMESTAMPDIFF(SECOND,ai.set_time,ai.ack_time) END)) AS `Mean Respond` FROM reporting.alarminfo ai JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id WHERE (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) GROUP BY ac.condition_name, ac.criticality ORDER BY ac.criticality DESC"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Alarm Response Statistics by Severity",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Alarms"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mean Time to Respond"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mean Time to Clear"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Condition"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Critical": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Major": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Minor": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ac.condition_name AS `Condition`, COUNT(*) AS `Total Alarms`, SUM(ai.ack_time IS NOT NULL) AS `Acknowledged`, ROUND(AVG(CASE WHEN ai.ack_time IS NOT NULL THEN TIMESTAMPDIFF(SECOND,ai.set_time,ai.ack_time) END)) AS `Mean Time to Respond`, ROUND(AVG(CASE WHEN ai.clear_time IS NOT NULL THEN TIMESTAMPDIFF(SECOND,ai.set_time,ai.clear_time) END)) AS `Mean Time to Clear` FROM reporting.alarminfo ai JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id WHERE (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) GROUP BY ac.condition_name, ac.criticality ORDER BY ac.criticality DESC"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Alarm Details (per-alarm response times)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 13
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Severity"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Critical": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Major": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Minor": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT m.model_name AS `Model Name`, at.title AS `Alarm Title`, ac.condition_name AS `Severity`, l.domain_name AS `Landscape`, ROUND(TIMESTAMPDIFF(SECOND,ai.set_time,ai.ack_time)/60,2) AS `Time to Acknowledge (min)`, ua.alarm_user_name AS `Acknowledged By`, ROUND(TIMESTAMPDIFF(SECOND,ai.set_time,ai.first_assigned_time)/60,2) AS `Time to First Assignment (min)`, uab.alarm_user_name AS `First Assigned By`, ROUND(TIMESTAMPDIFF(SECOND,ai.set_time,ai.set_troubleticket_time)/60,2) AS `Time to Trouble Ticket (min)`, ut.alarm_user_name AS `Trouble Ticketed By`, ROUND(TIMESTAMPDIFF(SECOND,ai.set_time,ai.clear_time)/60,2) AS `Total Alarm Duration (min)`, CASE WHEN ai.clear_user_key=1 THEN 'system' ELSE ai.clear_user END AS `Cleared By`, ROUND(NULLIF(LEAST(COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.ack_time),999999999),COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.first_assigned_time),999999999),COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.set_troubleticket_time),999999999),COALESCE(TIMESTAMPDIFF(SECOND,ai.set_time,ai.clear_time),999999999)),999999999)/60,2) AS `Shortest Duration (min)` FROM reporting.alarminfo ai JOIN reporting.model m ON m.model_key=ai.model_key JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id LEFT JOIN reporting.landscape l ON l.landscape_h=ai.landscape_h LEFT JOIN reporting.alarm_user ua ON ua.alarm_user_key=ai.ack_user_key LEFT JOIN reporting.alarm_user uab ON uab.alarm_user_key=ai.first_assigning_user_key LEFT JOIN reporting.alarm_user ut ON ut.alarm_user_key=ai.set_troubleticket_user_key WHERE (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) ORDER BY ai.set_time DESC LIMIT 500"
+        }
+      ]
+    }
+  ]
+}

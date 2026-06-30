@@ -1,0 +1,330 @@
+{
+  "uid": "spectrum-top-alarms",
+  "title": "Top-N Most Common Alarms",
+  "tags": [
+    "operational-reports",
+    "alarm"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "condition",
+        "type": "custom",
+        "label": "Alarm Condition",
+        "query": "Critical : 3,Major : 2,Minor : 1,Maintenance : 4",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "1,2,3,4",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": true
+          },
+          {
+            "text": "Critical",
+            "value": "3",
+            "selected": false
+          },
+          {
+            "text": "Major",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Minor",
+            "value": "1",
+            "selected": false
+          },
+          {
+            "text": "Maintenance",
+            "value": "4",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "topN",
+        "type": "custom",
+        "label": "Top N",
+        "query": "5,10,20,50",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "10",
+          "value": "10"
+        },
+        "options": [
+          {
+            "text": "5",
+            "value": "5",
+            "selected": false
+          },
+          {
+            "text": "10",
+            "value": "10",
+            "selected": true
+          },
+          {
+            "text": "20",
+            "value": "20",
+            "selected": false
+          },
+          {
+            "text": "50",
+            "value": "50",
+            "selected": false
+          }
+        ],
+        "allowCustomValue": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "barchart",
+      "title": "Top $topN Alarm Types by Occurrences",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Alarm Cause",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT at.title AS `Alarm Cause`, COUNT(*) AS Occurrences FROM reporting.alarminfo ai JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.condition_id IN ($condition) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) GROUP BY at.title ORDER BY Occurrences DESC LIMIT $topN"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Top $topN Most Common Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 12
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Alarm Cause"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View these alarms in the Alarm Log",
+                    "url": "/d/spectrum-alarm-log/spectrum-alarm-log?var-cause=${__value.text}&var-minDuration=0&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "No of Alarms"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Percentage of Total"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Condition"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Critical": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Major": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Minor": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Occurrences",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT at.title AS `Alarm Cause`, COUNT(*) AS `No of Alarms`, ROUND(100*COUNT(*)/g.tot,2) AS `Percentage of Total`, ROUND(COUNT(*)/GREATEST(1,TIMESTAMPDIFF(DAY,$__timeFrom(),$__timeTo()))) AS `Frequency (/Day)`, CASE MAX(ai.condition_id) WHEN 3 THEN 'Critical' WHEN 2 THEN 'Major' WHEN 1 THEN 'Minor' WHEN 4 THEN 'Maintenance' ELSE 'Other' END AS `Condition`, COUNT(DISTINCT ai.model_key) AS `Devices Affected` FROM reporting.alarminfo ai JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id CROSS JOIN (SELECT COUNT(*) tot FROM reporting.alarminfo ai2 WHERE ai2.condition_id IN ($condition) AND (-1 IN ($group) OR ai2.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai2.set_time)) g WHERE ai.condition_id IN ($condition) AND (-1 IN ($group) OR ai.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) AND $__timeFilter(ai.set_time) GROUP BY at.title, g.tot ORDER BY `No of Alarms` DESC LIMIT $topN"
+        }
+      ]
+    }
+  ]
+}

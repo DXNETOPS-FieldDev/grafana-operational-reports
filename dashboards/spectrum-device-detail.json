@@ -1,0 +1,616 @@
+{
+  "uid": "spectrum-device-detail",
+  "title": "Device Detail",
+  "tags": [
+    "operational-reports",
+    "drilldown"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "device",
+        "type": "query",
+        "label": "Device",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT DISTINCT entity_name FROM reporting.entity WHERE entity_name IS NOT NULL ORDER BY 1",
+        "definition": "SELECT DISTINCT entity_name FROM reporting.entity WHERE entity_name IS NOT NULL ORDER BY 1",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 1,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Asset",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT e.entity_name AS `Name`, dm.IP AS `IP`, dm.device_type AS `Device Type`, v.vendor_name AS `Vendor`, mc.mclass_name AS `Class`, NULLIF(dm.fw_rev,'') AS `Firmware`, dm.last_reboot AS `Last Reboot`, NULLIF(dm.location,'') AS `Location` FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key JOIN reporting.vendor v ON v.vendor=dm.vendor JOIN reporting.modelclass mc ON mc.model_class=dm.model_class WHERE e.entity_name='$device' LIMIT 1"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Availability (Unplanned)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(100*(1 - COALESCE(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),0)/TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo())),4) AS availability FROM reporting.entity e LEFT JOIN reporting.modeloutage mo ON mo.model_key=e.current_model_key AND mo.outage_type=1 AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom()) WHERE e.entity_name='$device'"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Outages",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 4,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS outages FROM reporting.entity e JOIN reporting.modeloutage mo ON mo.model_key=e.current_model_key WHERE e.entity_name='$device' AND mo.outage_type IN (1,2,3) AND $__timeFilter(mo.start_time)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Alarms",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 4,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS alarms FROM reporting.entity e JOIN reporting.alarminfo ai ON ai.model_key=e.current_model_key WHERE e.entity_name='$device' AND $__timeFilter(ai.set_time)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Outages for $device",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 24,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Outage Type"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Unplanned": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Planned": {
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "Exempt": {
+                        "color": "text",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Outage Start Time",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ot.outage_desc AS `Outage Type`, mo.start_time AS `Outage Start Time`, mo.end_time AS `Outage End Time`, CONCAT(FLOOR(TIMESTAMPDIFF(SECOND,mo.start_time,COALESCE(mo.end_time,NOW()))/86400),' Days ',LPAD(FLOOR(MOD(TIMESTAMPDIFF(SECOND,mo.start_time,COALESCE(mo.end_time,NOW())),86400)/3600),2,'0'),':',LPAD(FLOOR(MOD(TIMESTAMPDIFF(SECOND,mo.start_time,COALESCE(mo.end_time,NOW())),3600)/60),2,'0'),':',LPAD(MOD(TIMESTAMPDIFF(SECOND,mo.start_time,COALESCE(mo.end_time,NOW())),60),2,'0')) AS `Duration` FROM reporting.entity e JOIN reporting.modeloutage mo ON mo.model_key=e.current_model_key JOIN reporting.outagetype ot ON ot.outage_type=mo.outage_type WHERE e.entity_name='$device' AND $__timeFilter(mo.start_time) ORDER BY mo.start_time DESC LIMIT 200"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Alarms for $device",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 24,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Condition"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Critical": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Major": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Minor": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Start Time",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ai.set_time AS `Start Time`, ai.clear_time AS `End Time`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.alarm_id AS `Alarm Unique ID` FROM reporting.entity e JOIN reporting.alarminfo ai ON ai.model_key=e.current_model_key JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE e.entity_name='$device' AND $__timeFilter(ai.set_time) ORDER BY ai.set_time DESC LIMIT 200"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "Availability Summary",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Up Time"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Down Time"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Maintenance Time"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT GREATEST(0, TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo()) - COALESCE(x.unpl,0) - COALESCE(x.maint,0)) AS `Up Time`, COALESCE(x.unpl,0) AS `Down Time`, COALESCE(x.maint,0) AS `Maintenance Time` FROM (SELECT SUM(CASE WHEN mo.outage_type=1 THEN GREATEST(0,TIMESTAMPDIFF(SECOND,GREATEST(mo.start_time,$__timeFrom()),LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))) ELSE 0 END) AS unpl, SUM(CASE WHEN mo.outage_type IN (2,3) THEN GREATEST(0,TIMESTAMPDIFF(SECOND,GREATEST(mo.start_time,$__timeFrom()),LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))) ELSE 0 END) AS maint FROM reporting.entity e JOIN reporting.modeloutage mo ON mo.model_key=e.current_model_key WHERE e.entity_name='$device' AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom())) x"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "Outage Type Summary",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Unplanned"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Planned"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(SUM(CASE WHEN mo.outage_type=1 THEN GREATEST(0,TIMESTAMPDIFF(SECOND,GREATEST(mo.start_time,$__timeFrom()),LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))) ELSE 0 END),0) AS `Unplanned`, COALESCE(SUM(CASE WHEN mo.outage_type IN (2,3) THEN GREATEST(0,TIMESTAMPDIFF(SECOND,GREATEST(mo.start_time,$__timeFrom()),LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo()))) ELSE 0 END),0) AS `Planned` FROM reporting.entity e JOIN reporting.modeloutage mo ON mo.model_key=e.current_model_key WHERE e.entity_name='$device' AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom())"
+        }
+      ]
+    }
+  ]
+}

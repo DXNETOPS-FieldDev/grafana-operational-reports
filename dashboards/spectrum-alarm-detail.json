@@ -1,0 +1,186 @@
+{
+  "uid": "spectrum-alarm-detail",
+  "title": "Alarm Detail",
+  "tags": [
+    "operational-reports",
+    "drilldown"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "alarmId",
+        "type": "textbox",
+        "label": "Alarm ID",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "options": []
+      },
+      {
+        "name": "snowHost",
+        "type": "textbox",
+        "label": "ServiceNow Host",
+        "query": "ven01311.service-now.com",
+        "current": {
+          "text": "ven01311.service-now.com",
+          "value": "ven01311.service-now.com"
+        },
+        "options": [
+          {
+            "text": "ven01311.service-now.com",
+            "value": "ven01311.service-now.com",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Alarm",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 6
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Condition"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Critical": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Major": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Minor": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Device"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Device detail: ${__value.text}",
+                    "url": "/d/spectrum-device-detail/spectrum-device-detail?var-device=${__value.text}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ticket No"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open ticket ${__value.text}",
+                    "url": "https://${snowHost}/nav_to.do?uri=incident.do?sys_id=${__data.fields[\"Ticket sys_id\"]}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ticket sys_id"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT e.entity_name AS `Device`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.set_time AS `Set Time`, ai.ack_time AS `Ack Time`, ai.clear_time AS `Clear Time`, NULLIF(ai.clear_user,'') AS `Cleared By`, NULLIF(SUBSTRING_INDEX(ai.set_troubleticket_id,'Ticket Number ',-1),'') AS `Ticket No`, ai.occurrences AS `Occurrences`, ai.alarm_id AS `Alarm ID`, SUBSTRING_INDEX(SUBSTRING_INDEX(ai.set_troubleticket_id,'sys_id%3D',-1),'''>',1) AS `Ticket sys_id` FROM reporting.alarminfo ai JOIN reporting.entity e ON e.current_model_key=ai.model_key JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.alarm_id='$alarmId' LIMIT 1"
+        }
+      ]
+    }
+  ]
+}

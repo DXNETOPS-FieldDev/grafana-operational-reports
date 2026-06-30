@@ -1,0 +1,310 @@
+{
+  "uid": "spectrum-avail-class-vendor",
+  "title": "Availability by Class & Vendor",
+  "tags": [
+    "operational-reports",
+    "availability"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "group",
+        "type": "query",
+        "label": "Global Collection",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "definition": "SELECT gc_name AS __text, gc_rec_ID AS __value FROM reporting.globalcollection ORDER BY gc_name",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": [],
+        "allValue": "-1"
+      },
+      {
+        "name": "outageType",
+        "type": "custom",
+        "label": "Outage Type",
+        "query": "Unplanned : 1,Planned : 2,Exempt : 3",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "1,2,3",
+        "current": {
+          "selected": true,
+          "text": [
+            "Unplanned"
+          ],
+          "value": [
+            "1"
+          ]
+        },
+        "options": [
+          {
+            "text": "All",
+            "value": "$__all",
+            "selected": false
+          },
+          {
+            "text": "Unplanned",
+            "value": "1",
+            "selected": true
+          },
+          {
+            "text": "Planned",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Exempt",
+            "value": "3",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "deviceType",
+        "type": "query",
+        "label": "Device Type",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT DISTINCT device_type FROM reporting.devicemodel WHERE device_type IS NOT NULL AND destroy_time IS NULL ORDER BY 1",
+        "definition": "SELECT DISTINCT device_type FROM reporting.devicemodel WHERE device_type IS NOT NULL AND destroy_time IS NULL ORDER BY 1",
+        "multi": true,
+        "includeAll": true,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "barchart",
+      "title": "Availability % by Model Class",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Class",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT mc.mclass_name AS `Class`, ROUND(100*(1 - COALESCE(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),0)/(COUNT(DISTINCT dm.model_key)*TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo()))),4) AS `Availability` FROM reporting.devicemodel dm JOIN reporting.modelclass mc ON mc.model_class=dm.model_class LEFT JOIN reporting.modeloutage mo ON mo.model_key=dm.model_key AND mo.outage_type IN ($outageType) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom()) WHERE dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) GROUP BY mc.mclass_name ORDER BY `Availability` ASC"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Availability by Class & Vendor",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 24,
+        "h": 14
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Availability %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 99
+                    },
+                    {
+                      "color": "green",
+                      "value": 99.9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Downtime (hrs)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "h"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Devices"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-blues"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Availability %",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT mc.mclass_name AS `Class`, v.vendor_name AS `Vendor`, COUNT(DISTINCT dm.model_key) AS `Devices`, ROUND(COALESCE(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),0)/3600,2) AS `Downtime (hrs)`, COUNT(DISTINCT mo.model_outage_ID) AS `Number of Outages`, ROUND(100*(1 - COALESCE(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.start_time,$__timeFrom()), LEAST(COALESCE(mo.end_time,$__timeTo()),$__timeTo())))),0)/(COUNT(DISTINCT dm.model_key)*TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo()))),4) AS `Availability %` FROM reporting.devicemodel dm JOIN reporting.modelclass mc ON mc.model_class=dm.model_class JOIN reporting.vendor v ON v.vendor=dm.vendor LEFT JOIN reporting.modeloutage mo ON mo.model_key=dm.model_key AND mo.outage_type IN ($outageType) AND mo.start_time<$__timeTo() AND (mo.end_time IS NULL OR mo.end_time>=$__timeFrom()) WHERE dm.destroy_time IS NULL AND dm.device_type IN (${deviceType:singlequote}) AND (-1 IN ($group) OR dm.model_key IN (SELECT model_key FROM reporting.gcmodel WHERE gc_rec_ID IN ($group))) GROUP BY mc.mclass_name, v.vendor_name ORDER BY `Availability %` ASC, `Class`"
+        }
+      ]
+    }
+  ]
+}

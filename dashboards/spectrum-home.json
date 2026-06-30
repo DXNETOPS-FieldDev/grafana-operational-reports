@@ -1,0 +1,52 @@
+{
+  "uid": "spectrum-home",
+  "title": "Operational Reports — Home",
+  "tags": [
+    "operational-reports-home"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 6
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# Operational Reports — Grafana\n\nNetwork operational reports (Availability, Alarm, Asset, Event, Service). All dashboards query the `reporting` MySQL database live and are scoped by the **Global Collection** filter, mirroring the original `:All` / `:Group` report variants.\n\n**Availability:** Device Availability · Outage Log  |  **Alarm:** Alarm Log · Top-N Most Common Alarms · Mean Time to Respond  |  **Asset:** Current Assets"
+      }
+    },
+    {
+      "id": 2,
+      "type": "dashlist",
+      "title": "Operational Report Dashboards",
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 24,
+        "h": 14
+      },
+      "options": {
+        "showStarred": false,
+        "showRecentlyViewed": false,
+        "showSearch": true,
+        "showHeadings": false,
+        "tags": [
+          "operational-reports"
+        ],
+        "maxItems": 30
+      }
+    }
+  ]
+}

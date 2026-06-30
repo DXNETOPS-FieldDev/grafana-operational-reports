@@ -1,0 +1,357 @@
+{
+  "uid": "spectrum-customer-detail",
+  "title": "Customer Detail",
+  "tags": [
+    "operational-reports",
+    "service"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "customer",
+        "type": "query",
+        "label": "Customer",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT custName AS __text, customerMH AS __value FROM reporting.sm_customermhs WHERE customerMH NOT IN (0,1) AND custDestroyTime IS NULL ORDER BY custName",
+        "definition": "SELECT custName AS __text, customerMH AS __value FROM reporting.sm_customermhs WHERE customerMH NOT IN (0,1) AND custDestroyTime IS NULL ORDER BY custName",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "Miami-Users",
+          "value": "16785795"
+        },
+        "options": []
+      },
+      {
+        "name": "downStates",
+        "type": "custom",
+        "label": "Counts as Outage (Health Level)",
+        "query": "Down : 1,Degraded : 2,Slightly Degraded : 3,Loss Of Management : 5",
+        "multi": true,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": [
+            "Down"
+          ],
+          "value": [
+            "1"
+          ]
+        },
+        "options": [
+          {
+            "text": "Down",
+            "value": "1",
+            "selected": true
+          },
+          {
+            "text": "Degraded",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Slightly Degraded",
+            "value": "3",
+            "selected": false
+          },
+          {
+            "text": "Loss Of Management",
+            "value": "5",
+            "selected": false
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Services Used",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 9,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT m.monitorMH) AS services FROM reporting.sm_monitors m JOIN reporting.sm_slmuses su ON su.monitorMH=m.monitorMH AND su.usesDestroyTime IS NULL JOIN reporting.sm_customermhs cm ON cm.customerMH=su.customerMH WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND cm.customerMH IN ($customer)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Customer Contact Information",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 9,
+        "h": 14
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ord"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH c AS (SELECT cust.* FROM reporting.sm_customers cust JOIN reporting.sm_customermhs cm ON cust.custName=cm.custName WHERE cm.customerMH IN ($customer) AND cm.customerMH<>1 LIMIT 1) SELECT ord, Attribute, Value FROM (SELECT 1 ord,'Customer' Attribute, CAST(custName AS CHAR) Value FROM c UNION ALL SELECT 2,'Customer ID', CAST(customerID AS CHAR) FROM c UNION ALL SELECT 3,'Criticality', CAST(custCriticality AS CHAR) FROM c UNION ALL SELECT 4,'Primary Contact', primContName FROM c UNION ALL SELECT 5,'Primary Title', primContTitle FROM c UNION ALL SELECT 6,'Primary Location', primContLocation FROM c UNION ALL SELECT 7,'Primary Phone', primPhone FROM c UNION ALL SELECT 8,'Primary Mobile', primMobile FROM c UNION ALL SELECT 9,'Primary Email', primEmail FROM c UNION ALL SELECT 10,'Secondary Contact', secContName FROM c UNION ALL SELECT 11,'Secondary Title', secContTitle FROM c UNION ALL SELECT 12,'Secondary Location', secContLocation FROM c UNION ALL SELECT 13,'Secondary Phone', secPhone FROM c UNION ALL SELECT 14,'Secondary Mobile', secMobile FROM c UNION ALL SELECT 15,'Secondary Email', secEmail FROM c) z ORDER BY ord"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Services Used by Customer",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 9,
+        "y": 0,
+        "w": 15,
+        "h": 18
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Availability %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 99
+                    },
+                    {
+                      "color": "green",
+                      "value": 99.9
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Current Health"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Up": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Slightly Degraded": {
+                        "color": "yellow",
+                        "index": 1
+                      },
+                      "Degraded": {
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "Down": {
+                        "color": "red",
+                        "index": 3
+                      },
+                      "Loss Of Management": {
+                        "color": "red",
+                        "index": 4
+                      },
+                      "Maintenance": {
+                        "color": "blue",
+                        "index": 5
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open in Service Availability & Health",
+                    "url": "/d/spectrum-service-availability/?var-service=${__data.fields.monitorMH}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "monitorMH"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Availability %",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT m.monName AS `Service`, m.monitorMH AS `monitorMH`, m.monDescription AS `Location/Desc`, COALESCE(sh.serviceHealthName,'Up') AS `Current Health`, ROUND(100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo())),4) AS `Availability %` FROM reporting.sm_monitors m JOIN reporting.sm_slmuses su ON su.monitorMH=m.monitorMH AND su.usesDestroyTime IS NULL JOIN reporting.sm_customermhs cm ON cm.customerMH=su.customerMH LEFT JOIN (SELECT mm.monitorMH AS mh, SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.startTime,$__timeFrom()), LEAST(COALESCE(mo.endTime,$__timeTo()),$__timeTo())))) AS down_secs FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mo.serviceHealth IN ($downStates) AND mo.outageType<=1 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom() GROUP BY mm.monitorMH) o ON o.mh=m.monitorMH LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND cm.customerMH IN ($customer) ORDER BY `Availability %` ASC"
+        }
+      ]
+    }
+  ]
+}

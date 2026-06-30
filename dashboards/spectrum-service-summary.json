@@ -1,0 +1,648 @@
+{
+  "uid": "spectrum-service-summary",
+  "title": "Service Summary & Inventory",
+  "tags": [
+    "operational-reports",
+    "service"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "reportTitle",
+        "type": "textbox",
+        "label": "Report Title",
+        "query": "Summary of Service Availability",
+        "current": {
+          "selected": true,
+          "text": "Summary of Service Availability",
+          "value": "Summary of Service Availability"
+        },
+        "options": []
+      },
+      {
+        "name": "service",
+        "type": "query",
+        "label": "Service",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT monName AS __text, monitorMH AS __value FROM reporting.sm_monitors WHERE monitorType=0 AND monDestroyTime IS NULL AND monitorMH NOT IN (0,1) ORDER BY monName",
+        "definition": "SELECT monName AS __text, monitorMH AS __value FROM reporting.sm_monitors WHERE monitorType=0 AND monDestroyTime IS NULL AND monitorMH NOT IN (0,1) ORDER BY monName",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "-1",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      },
+      {
+        "name": "customer",
+        "type": "query",
+        "label": "Customer",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT custName AS __text, customerMH AS __value FROM reporting.sm_customermhs WHERE customerMH NOT IN (0,1) AND custDestroyTime IS NULL ORDER BY custName",
+        "definition": "SELECT custName AS __text, customerMH AS __value FROM reporting.sm_customermhs WHERE customerMH NOT IN (0,1) AND custDestroyTime IS NULL ORDER BY custName",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "-1",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "options": []
+      },
+      {
+        "name": "downStates",
+        "type": "custom",
+        "label": "Counts as Outage (Health Level)",
+        "query": "Down : 1,Degraded : 2,Slightly Degraded : 3,Loss Of Management : 5",
+        "multi": true,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": [
+            "Down"
+          ],
+          "value": [
+            "1"
+          ]
+        },
+        "options": [
+          {
+            "text": "Down",
+            "value": "1",
+            "selected": true
+          },
+          {
+            "text": "Degraded",
+            "value": "2",
+            "selected": false
+          },
+          {
+            "text": "Slightly Degraded",
+            "value": "3",
+            "selected": false
+          },
+          {
+            "text": "Loss Of Management",
+            "value": "5",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "name": "availTarget",
+        "type": "textbox",
+        "label": "Targeted Level of Service (%)",
+        "query": "99",
+        "current": {
+          "selected": true,
+          "text": "99",
+          "value": "99"
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 10,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# ${reportTitle}\n**Date Range:** ${__from:date:YYYY-MM-DD HH:mm} to ${__to:date:YYYY-MM-DD HH:mm}"
+      }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Services",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS total FROM reporting.sm_monitors m WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR m.monitorMH IN (SELECT su.monitorMH FROM reporting.sm_slmuses su WHERE su.usesDestroyTime IS NULL AND su.customerMH IN ($customer)))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Avg % Available",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 3,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(AVG(100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo()))),3) AS avail FROM reporting.sm_monitors m LEFT JOIN (SELECT mm.monitorMH AS mh, SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.startTime,$__timeFrom()), LEAST(COALESCE(mo.endTime,$__timeTo()),$__timeTo())))) AS down_secs FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mo.serviceHealth IN ($downStates) AND mo.outageType<=1 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom() GROUP BY mm.monitorMH) o ON o.mh=m.monitorMH WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR m.monitorMH IN (SELECT su.monitorMH FROM reporting.sm_slmuses su WHERE su.usesDestroyTime IS NULL AND su.customerMH IN ($customer)))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Services Below Target ($availTarget%)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 3,
+        "w": 8,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS below FROM (SELECT 100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo())) AS avail FROM reporting.sm_monitors m LEFT JOIN (SELECT mm.monitorMH AS mh, SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.startTime,$__timeFrom()), LEAST(COALESCE(mo.endTime,$__timeTo()),$__timeTo())))) AS down_secs FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mo.serviceHealth IN ($downStates) AND mo.outageType<=1 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom() GROUP BY mm.monitorMH) o ON o.mh=m.monitorMH WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR m.monitorMH IN (SELECT su.monitorMH FROM reporting.sm_slmuses su WHERE su.usesDestroyTime IS NULL AND su.customerMH IN ($customer)))) t WHERE t.avail < $availTarget"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "${reportTitle} \u2014 by Service Name (Target $availTarget%)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 24,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Meets": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Below Target": {
+                        "color": "red",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Percentage Available"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Percentage Down"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Outage Count"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Percentage Available",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE WHEN 100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo())) >= $availTarget THEN 'Meets' ELSE 'Below Target' END AS `Status`, m.monName AS `Service Name`, ROUND(100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo())),3) AS `Percentage Available`, ROUND(100*COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo()),3) AS `Percentage Down`, COALESCE(o.outages,0) AS `Outage Count` FROM reporting.sm_monitors m LEFT JOIN (SELECT mm.monitorMH AS mh, COUNT(DISTINCT mo.monOutageID) AS outages, SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.startTime,$__timeFrom()), LEAST(COALESCE(mo.endTime,$__timeTo()),$__timeTo())))) AS down_secs FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mo.serviceHealth IN ($downStates) AND mo.outageType<=1 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom() GROUP BY mm.monitorMH) o ON o.mh=m.monitorMH WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR m.monitorMH IN (SELECT su.monitorMH FROM reporting.sm_slmuses su WHERE su.usesDestroyTime IS NULL AND su.customerMH IN ($customer))) ORDER BY `Percentage Available` ASC, `Service Name`"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "${reportTitle} \u2014 by Customer (Target $availTarget%)",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Meets": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "Below Target": {
+                        "color": "red",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Percentage Available"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Percentage Down"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Outage Count"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Customer",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE WHEN 100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo())) >= $availTarget THEN 'Meets' ELSE 'Below Target' END AS `Status`, cm.custName AS `Customer`, m.monName AS `Service Name`, ROUND(100*(1 - COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo())),3) AS `Percentage Available`, ROUND(100*COALESCE(o.down_secs,0)/TIMESTAMPDIFF(SECOND, GREATEST($__timeFrom(), m.monCreateTime), $__timeTo()),3) AS `Percentage Down`, COALESCE(o.outages,0) AS `Outage Count` FROM reporting.sm_monitors m JOIN reporting.sm_slmuses su ON su.monitorMH=m.monitorMH AND su.usesDestroyTime IS NULL JOIN reporting.sm_customermhs cm ON cm.customerMH=su.customerMH AND cm.customerMH NOT IN (0,1) AND cm.custDestroyTime IS NULL LEFT JOIN (SELECT mm.monitorMH AS mh, COUNT(DISTINCT mo.monOutageID) AS outages, SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.startTime,$__timeFrom()), LEAST(COALESCE(mo.endTime,$__timeTo()),$__timeTo())))) AS down_secs FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mo.serviceHealth IN ($downStates) AND mo.outageType<=1 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom() GROUP BY mm.monitorMH) o ON o.mh=m.monitorMH WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR su.customerMH IN ($customer)) ORDER BY `Customer`, `Percentage Available` ASC"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Service & Resource Monitor Inventory",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 24,
+        "h": 10
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Service Or Resource Monitor",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONCAT(CASE WHEN m.monitorType=0 THEN '(S) ' ELSE '' END, m.monName) AS `Service Or Resource Monitor`, r.resourceName AS `Resources`, r.resourceModelClass AS `Resource Class` FROM reporting.sm_monitors m JOIN reporting.sm_slmmonitors smm ON m.monitorMH=smm.monitorMH AND smm.monitorsDestroyTime IS NULL JOIN reporting.sm_resources r ON smm.resourceMH=r.resourceMH WHERE m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR m.monitorMH IN (SELECT su.monitorMH FROM reporting.sm_slmuses su WHERE su.usesDestroyTime IS NULL AND su.customerMH IN ($customer))) ORDER BY m.monName, r.resourceName"
+        }
+      ]
+    }
+  ]
+}

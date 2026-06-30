@@ -1,0 +1,503 @@
+{
+  "uid": "spectrum-service-detail",
+  "title": "Service Detail",
+  "tags": [
+    "operational-reports",
+    "drilldown"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 0,
+  "time": {
+    "from": "now-1y",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data Source",
+        "query": "mysql",
+        "regex": "/^Spectrum (Reporting|MySQL)$/",
+        "hide": 2,
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "Spectrum Reporting",
+          "value": "RQntVjiNk"
+        },
+        "options": []
+      },
+      {
+        "name": "service",
+        "type": "query",
+        "label": "Service",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "query": "SELECT monName AS __text, monitorMH AS __value FROM reporting.sm_monitors WHERE monitorType=0 AND monDestroyTime IS NULL AND monitorMH NOT IN (0,1) ORDER BY monName",
+        "definition": "SELECT monName AS __text, monitorMH AS __value FROM reporting.sm_monitors WHERE monitorType=0 AND monDestroyTime IS NULL AND monitorMH NOT IN (0,1) ORDER BY monName",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "MicrosoftService",
+          "value": "16785796"
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Service",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT m.monName AS `Service`, m.monCriticality AS `Criticality`, COALESCE(sh.serviceHealthName,'Up') AS `Current Health`, m.monDescription AS `Description (geo)` FROM reporting.sm_monitors m LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE m.monitorMH=$service LIMIT 1"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Availability %",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 99
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT ROUND(100*(1 - COALESCE(SUM(GREATEST(0, TIMESTAMPDIFF(SECOND, GREATEST(mo.startTime,$__timeFrom()), LEAST(COALESCE(mo.endTime,$__timeTo()),$__timeTo())))),0)/TIMESTAMPDIFF(SECOND,$__timeFrom(),$__timeTo())),4) AS v FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mm.monitorMH=$service AND mo.serviceHealth=1 AND mo.outageType<=1 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Outages",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT mo.monOutageID) AS v FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID WHERE mm.monitorMH=$service AND mo.serviceHealth IN (1,2,3,5) AND mo.outageType<=1 AND mo.startTime>=$__timeFrom() AND mo.startTime<$__timeTo()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Customers",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT su.customerMH) AS v FROM reporting.sm_slmuses su WHERE su.monitorMH=$service AND su.usesDestroyTime IS NULL AND su.customerMH NOT IN (0,1)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Owners",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT o.userMH) AS v FROM reporting.sm_slmowns o WHERE o.monitorMH=$service AND o.ownsDestroyTime IS NULL"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Service Health \u2014 Outage Details",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Health"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "Down": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "Degraded": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "Slightly Degraded": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "Loss Of Management": {
+                        "color": "red",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Start Time",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT sh.serviceHealthName AS `Health`, CASE mo.outageType WHEN 0 THEN 'Initial' WHEN 1 THEN 'Unplanned' WHEN 2 THEN 'Planned' ELSE 'Exempt' END AS `Type`, mo.startTime AS `Start Time`, mo.endTime AS `End Time`, CONCAT(FLOOR(TIMESTAMPDIFF(SECOND,mo.startTime,COALESCE(mo.endTime,NOW()))/86400),' Days ',LPAD(FLOOR(MOD(TIMESTAMPDIFF(SECOND,mo.startTime,COALESCE(mo.endTime,NOW())),86400)/3600),2,'0'),':',LPAD(FLOOR(MOD(TIMESTAMPDIFF(SECOND,mo.startTime,COALESCE(mo.endTime,NOW())),3600)/60),2,'0'),':',LPAD(MOD(TIMESTAMPDIFF(SECOND,mo.startTime,COALESCE(mo.endTime,NOW())),60),2,'0')) AS `Duration`, NULLIF(mo.notes,'') AS `Notes` FROM reporting.sm_monitormaps mm JOIN reporting.sm_monitoroutages mo ON mm.monOutageID=mo.monOutageID JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=mo.serviceHealth WHERE mm.monitorMH=$service AND mo.serviceHealth!=10 AND mo.startTime<$__timeTo() AND COALESCE(mo.endTime,$__timeTo())>$__timeFrom() ORDER BY mo.startTime DESC LIMIT 200"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Customers Using This Service",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Customer"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Customer detail: ${__value.text}",
+                    "url": "/d/spectrum-customer-detail/?var-customer=${__data.fields.customerMH}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "customerMH"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Customer",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT cm.custName AS `Customer`, su.customerMH AS `customerMH` FROM reporting.sm_slmuses su JOIN reporting.sm_customermhs cm ON cm.customerMH=su.customerMH WHERE su.monitorMH=$service AND su.usesDestroyTime IS NULL AND cm.customerMH NOT IN (0,1) AND cm.custDestroyTime IS NULL ORDER BY cm.custName"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Service Owners",
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Owner",
+            "desc": false
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT um.userName AS `Owner` FROM reporting.sm_slmowns o JOIN reporting.sm_usersmhs um ON um.userMH=o.userMH WHERE o.monitorMH=$service AND o.ownsDestroyTime IS NULL ORDER BY um.userName"
+        }
+      ]
+    }
+  ]
+}
