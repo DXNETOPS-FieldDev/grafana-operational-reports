@@ -1,0 +1,57 @@
+{
+  "root": "Operational Reports",
+  "root_dashboards": [
+    "spectrum-home.json",
+    "spectrum-device-detail.json"
+  ],
+  "folders": [
+    {
+      "title": "Alarm Reports",
+      "dashboards": [
+        "spectrum-alarm-activity.json",
+        "spectrum-alarm-count-trend.json",
+        "spectrum-alarm-detail.json",
+        "spectrum-alarm-log.json",
+        "spectrum-alarm-mttr.json",
+        "spectrum-alarm-top-devices.json",
+        "spectrum-top-alarms.json"
+      ]
+    },
+    {
+      "title": "Asset Reports",
+      "dashboards": [
+        "spectrum-current-assets.json",
+        "spectrum-assets-customizable.json",
+        "spectrum-chassis-assets.json",
+        "spectrum-port-assets-customizable.json",
+        "spectrum-current-ports.json",
+        "spectrum-current-ports-capacity.json",
+        "spectrum-change-management.json"
+      ]
+    },
+    {
+      "title": "Availability Reports",
+      "dashboards": [
+        "spectrum-availability-bizhours.json",
+        "spectrum-availability-class-vendor.json",
+        "spectrum-availability.json",
+        "spectrum-outage-log.json",
+        "spectrum-service-availability.json"
+      ]
+    },
+    {
+      "title": "Event Reports",
+      "dashboards": [
+        "spectrum-event-log.json"
+      ]
+    },
+    {
+      "title": "Service/SLA Reports",
+      "dashboards": [
+        "spectrum-customer-detail.json",
+        "spectrum-service-detail.json",
+        "spectrum-service-summary.json"
+      ]
+    }
+  ]
+}

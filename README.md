@@ -7,6 +7,7 @@ Grafana dashboards migrated from CABI Operational Reports for **DX NetOps Spectr
 | Folder | Description |
 |---|---|
 | `dashboards/` | Grafana dashboard JSON files (import directly via Grafana UI or API) |
+| `deploy/` | Automated deployment script + folder-tree mapping (see `docs/Deploying-to-a-New-Grafana-Environment.md`) |
 | `docs/` | User-facing documentation for individual reports |
 
 ## Dashboards
@@ -39,8 +40,13 @@ Grafana dashboards migrated from CABI Operational Reports for **DX NetOps Spectr
 | `spectrum-device-detail.json` | Device Detail (drill-down) | — |
 | `spectrum-customer-detail.json` | Customer Detail (drill-down) | — |
 
-## Importing
+## Deploying to a new environment
 
+See **`docs/Deploying-to-a-New-Grafana-Environment.md`** for the full guide,
+including the automated deploy script (`deploy/deploy_dashboards.py`) that
+recreates the folder tree and pushes all 25 dashboards in one step.
+
+For a one-off manual import instead:
 1. In Grafana, go to **Dashboards → Import**.
 2. Upload the JSON file or paste its contents.
 3. Select the **Spectrum Reporting** datasource when prompted.
@@ -53,6 +59,7 @@ Dashboards query the Spectrum `reporting` schema via MySQL. The datasource must 
 
 ## Documentation
 
+- `docs/Deploying-to-a-New-Grafana-Environment.md` — how to deploy this dashboard set to any Grafana instance
 - `docs/Alarm-Cause-Filter-OR-AND.md` — how to use OR/AND in the Alarm Cause filter
 - `docs/Grafana-vs-Jasper-Parity-2026-06-25.md` — parity analysis vs CABI Reports
 - `docs/Service-Health-Map-geomap.md` — Service Health Map enhancement notes
