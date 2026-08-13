@@ -29,7 +29,49 @@ If it doesn't exist yet, create one:
 - Type: **MySQL**
 - Host: `<spectrum-mysql-host>:3306`
 - Database: `reporting`
-- User / Password: the read-only reporting credentials for your environment
+- User / Password: the read-only reporting credentials for your environment (see below)
+
+### Creating the read-only MySQL account
+
+Every query across all 25 dashboards is a `SELECT` — nothing here ever writes.
+The account these dashboards connect with needs `SELECT` only, and only on
+the tables the dashboards actually query. The full list, extracted directly
+from the dashboards' SQL:
+
+`alarm_user`, `alarmactivity`, `alarmcondition`, `alarminfo`, `alarmtitle`,
+`creator`, `devicemodel`, `devicemodule`, `entity`, `event`, `eventdesc`,
+`gcmodel`, `globalcollection`, `interfacemodel`, `ipls_names`, `landscape`,
+`model`, `modelclass`, `modeloutage`, `modeloutage_notes`, `modeltype`,
+`outagetype`, `portduplex`, `sm_customermhs`, `sm_customers`,
+`sm_monitormaps`, `sm_monitoroutages`, `sm_monitors`, `sm_resources`,
+`sm_servicehealth`, `sm_slmmonitors`, `sm_slmowns`, `sm_slmuses`,
+`sm_usersmhs`, `time_dimension`, `vendor`
+
+**Simplest — grant on the whole `reporting` schema** (still read-only, still
+scoped to this one database, and won't need revisiting if a future dashboard
+queries one more table in the same schema):
+
+```sql
+CREATE USER 'grafana_ro'@'%' IDENTIFIED BY '<a strong password>';
+GRANT SELECT ON reporting.* TO 'grafana_ro'@'%';
+FLUSH PRIVILEGES;
+```
+
+**Or, if your policy requires granting table-by-table rather than
+schema-wide**, run one `GRANT SELECT` per table from the list above instead
+of the `reporting.*` line, e.g.:
+
+```sql
+CREATE USER 'grafana_ro'@'%' IDENTIFIED BY '<a strong password>';
+GRANT SELECT ON reporting.alarm_user TO 'grafana_ro'@'%';
+GRANT SELECT ON reporting.alarmactivity TO 'grafana_ro'@'%';
+-- ... one GRANT SELECT line per table in the list above ...
+GRANT SELECT ON reporting.vendor TO 'grafana_ro'@'%';
+FLUSH PRIVILEGES;
+```
+
+Restrict `'%'` to your Grafana server's actual host/subnet if your MySQL
+deployment supports host-scoped grants.
 
 ## Step 2 — Get a service-account token
 

@@ -44,15 +44,15 @@
         "name": "snowHost",
         "type": "textbox",
         "label": "ServiceNow Host",
-        "query": "ven01311.service-now.com",
+        "query": "your-servicenow-instance.example.com",
         "current": {
-          "text": "ven01311.service-now.com",
-          "value": "ven01311.service-now.com"
+          "text": "your-servicenow-instance.example.com",
+          "value": "your-servicenow-instance.example.com"
         },
         "options": [
           {
-            "text": "ven01311.service-now.com",
-            "value": "ven01311.service-now.com",
+            "text": "your-servicenow-instance.example.com",
+            "value": "your-servicenow-instance.example.com",
             "selected": true
           }
         ]
