@@ -17,13 +17,13 @@ Ten other dashboards link into Device Detail (Alarm Detail, Alarm Log, Top-N Dev
 
 ## Datasource
 
-Reads from a MySQL datasource named **exactly** `Spectrum Reporting` or `Spectrum MySQL` — see [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how the name-based resolution works and how to create the datasource if you don't have one yet.
+Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource isn't named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves by name)* | Which MySQL connection the panels query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `device` | Not if you always arrive via a drill-down link — those set it for you | *(none)* | The one device this page is about. |
 
 **Opening this page directly** (not via a link): `device` is a single-select dropdown with no "All" option, so on first load it re-queries your own inventory and selects a device from the list rather than showing "no data" — just confirm it's the device you meant, or pick a different one from the dropdown.
@@ -32,7 +32,7 @@ Reads from a MySQL datasource named **exactly** `Spectrum Reporting` or `Spectru
 
 | Symptom | How obvious | Likely cause | Fix |
 |---|---|---|---|
-| "Data source not found" right after import | Loud | Datasource variable's saved value is a uid from another Grafana | Load the page once in a browser — Grafana re-resolves `$datasource` by name automatically (see deploy guide) |
+| "Data source not found" right after import | Loud | The saved datasource value is a uid from a different Grafana | Pick yours from the **Data Source** selector at the top of the dashboard |
 | Every panel says "No data" | Quiet | Datasource name doesn't match, or points at the wrong database | Confirm **Save & Test** passes on your datasource and it points at the `reporting` database |
 | Page loads but shows the wrong device | Quiet | Reached this page directly rather than via a drill-down link | Pick the right device from the `device` dropdown |
 | Numbers differ from what you expected for a given day | Quiet | The database stores timestamps in UTC; the dashboard defaults to your browser's local timezone | Check the dashboard's time range against UTC, not local time, before assuming a data problem |

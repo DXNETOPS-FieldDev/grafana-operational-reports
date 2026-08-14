@@ -15,13 +15,13 @@ Alarm volume over time, broken out by severity. Total/Critical/Major tiles, a se
 
 ## Datasource
 
-Reads from a MySQL datasource named **exactly** `Spectrum Reporting` or `Spectrum MySQL` — see [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how the name-based resolution works and how to create the datasource if you don't have one yet.
+Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource isn't named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves by name)* | Which MySQL connection the panels query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `group` | No — optional filter | All | Restrict to a device group/collection. |
 | `devices` | No — optional filter | All | Restrict to specific devices. |
 | `condition` | No — optional filter | All | Restrict to Critical/Major/Minor/Maintenance. |
@@ -31,7 +31,7 @@ Reads from a MySQL datasource named **exactly** `Spectrum Reporting` or `Spectru
 
 | Symptom | How obvious | Likely cause | Fix |
 |---|---|---|---|
-| "Data source not found" right after import | Loud | Datasource variable's saved value is a uid from another Grafana | Load the page once in a browser — `$datasource` re-resolves by name automatically |
+| "Data source not found" right after import | Loud | The saved datasource value is a uid from a different Grafana | Pick yours from the **Data Source** selector at the top of the dashboard |
 | Every panel says "No data" | Quiet | Datasource name doesn't match, or wrong database | Confirm **Save & Test** passes and it points at the `reporting` database |
 | Numbers differ from what you expected for a given day | Quiet | Database timestamps are UTC; the dashboard defaults to your browser's local timezone | Check the time range against UTC before assuming a data problem |
 

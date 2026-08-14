@@ -8,11 +8,12 @@ instance — Dev, Production, or a customer's own environment.
 
 1. **A running Grafana instance** (tested on Grafana 12.x; OSS or Enterprise
    both work).
-2. **A MySQL datasource pointing at the Spectrum `reporting` database**,
-   named **exactly** `Spectrum Reporting` or `Spectrum MySQL`. The dashboards
-   resolve their datasource by **name** (via a regex match), not by uid, so
-   any Grafana instance with a correctly-named datasource works without
-   editing the dashboard JSON.
+2. **A MySQL datasource pointing at the Spectrum `reporting` database.** The
+   dashboards resolve their datasource by **name** (via a regex match), not by
+   uid, and match `mysql-spectrum-reporting` — the name a stock **Custom
+   Dashboards** install uses — or `Spectrum Reporting` / `Spectrum MySQL`. If
+   yours is named something else, you do not need to rename it or edit any
+   JSON: every dashboard exposes a **Data Source** selector at the top.
 3. **A Grafana service-account token** with **Editor** (or **Admin**) role —
    needed to create folders and push dashboards.
 4. Network reachability from the Grafana server to the Spectrum MySQL host
@@ -21,9 +22,14 @@ instance — Dev, Production, or a customer's own environment.
 
 ## Step 1 — Verify the datasource
 
-In Grafana: **Connections → Data sources**, confirm a MySQL datasource named
-`Spectrum Reporting` (or `Spectrum MySQL`) exists and click **Save & Test** —
-it should report **"Database Connection OK."**
+In Grafana: **Connections → Data sources**, confirm a MySQL datasource exists
+and click **Save & Test** — it should report **"Database Connection OK."**
+
+The dashboards match a datasource named `mysql-spectrum-reporting` — the name a
+stock **Custom Dashboards** install uses — or `Spectrum Reporting` /
+`Spectrum MySQL`. **If yours is named something else you do not need to rename
+it**: every dashboard exposes a **Data Source** selector at the top, so pick
+yours there after importing.
 
 If it doesn't exist yet, create one:
 - Type: **MySQL**

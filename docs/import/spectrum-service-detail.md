@@ -21,7 +21,7 @@ Service Availability & Health → Service Detail → Customer Detail → back to
 
 ## Datasource
 
-All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or `Spectrum MySQL` — see [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource).
+Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
@@ -29,7 +29,7 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if not named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves)* | Which MySQL connection to query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `service` | No — optional filter | All | Restrict to specific services. |
 | `customer` | No — optional filter | All | Restrict to a specific customer's services. |
 | `downStates` | No — optional filter | Down | Which states count as "down" (Down / Degraded / Slightly Degraded / Loss Of Management). |
@@ -39,14 +39,14 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if not named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves)* | Which MySQL connection to query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `service` | **Yes, if opened directly** — arriving via a link sets it for you | *(re-queries your data; no "All")* | Which service this page is about. |
 
 **Customer Detail**
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if not named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves)* | Which MySQL connection to query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `customer` | **Yes, if opened directly** — arriving via a link sets it for you | *(re-queries your data; no "All")* | Which customer this page is about. |
 | `downStates` | No — optional filter | Down | Which states count as "down" for that customer's services. |
 
@@ -56,7 +56,7 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Symptom | How obvious | Likely cause | Fix |
 |---|---|---|---|
-| "Data source not found" right after import | Loud | Datasource variable's saved value is a uid from another Grafana | Load the page once in a browser — `$datasource` re-resolves by name automatically |
+| "Data source not found" right after import | Loud | The saved datasource value is a uid from a different Grafana | Pick yours from the **Data Source** selector at the top of the dashboard |
 | Every panel says "No data" | Quiet | Datasource name doesn't match, or wrong database | Confirm **Save & Test** passes and it points at the `reporting` database |
 | Service Detail / Customer Detail shows an unexpected record | Quiet | Opened directly rather than via a drill-down link | Pick the right value from the `service`/`customer` dropdown |
 | Counts differ from what you expected for a given day | Quiet | Database timestamps are UTC; the dashboard defaults to your browser's local timezone | Check the time range against UTC before assuming a data problem |

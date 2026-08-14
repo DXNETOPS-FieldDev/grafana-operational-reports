@@ -21,7 +21,7 @@ Top-N Most Common Alarms → Alarm Log → Alarm Detail. Alarm Log also links to
 
 ## Datasource
 
-All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or `Spectrum MySQL` — see [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource).
+Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
@@ -29,7 +29,7 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if not named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves)* | Which MySQL connection to query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `group` | No — optional filter | All | Restrict to a device group/collection. |
 | `condition` | No — optional filter | All | Restrict to Critical/Major/Minor/Maintenance. |
 | `minDuration` | No — optional filter | 300 (seconds) | Hide short-lived alarms below this duration. |
@@ -40,7 +40,7 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if not named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves)* | Which MySQL connection to query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `alarmId` | **Yes, if opened directly** — arriving via the Alarm Log link sets it for you | *(blank)* | Which alarm to show. Blank shows nothing. |
 | `snowHost` | **Yes** | `your-servicenow-instance.example.com` (placeholder) | Hostname the "Open in ServiceNow" link points at. Set it to your own ServiceNow instance, or the link won't resolve. |
 
@@ -48,7 +48,7 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if not named `Spectrum Reporting`/`Spectrum MySQL` | *(auto-resolves)* | Which MySQL connection to query. |
+| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
 | `group` | No — optional filter | All | Restrict to a device group/collection. |
 | `condition` | No — optional filter | All | Restrict to Critical/Major/Minor/Maintenance. |
 | `topN` | No — optional filter | 10 | How many alarm types to rank. |
@@ -57,7 +57,7 @@ All three read from a MySQL datasource named **exactly** `Spectrum Reporting` or
 
 | Symptom | How obvious | Likely cause | Fix |
 |---|---|---|---|
-| "Data source not found" right after import | Loud | Datasource variable's saved value is a uid from another Grafana | Load the page once in a browser — `$datasource` re-resolves by name automatically |
+| "Data source not found" right after import | Loud | The saved datasource value is a uid from a different Grafana | Pick yours from the **Data Source** selector at the top of the dashboard |
 | Every panel says "No data" | Quiet | Datasource name doesn't match, or wrong database | Confirm **Save & Test** passes and it points at the `reporting` database |
 | Alarm Detail is blank when opened directly | Quiet | `alarmId` is empty — it's a drill-down-only field | Open it via a link from Alarm Log, or set `alarmId` manually |
 | "Open in ServiceNow" link goes to the wrong place, or 404s | Cosmetic but real | `snowHost` is still the placeholder value | Set it to your own ServiceNow host |
