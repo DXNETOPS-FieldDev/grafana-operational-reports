@@ -12,33 +12,33 @@ Grafana dashboards migrated from CABI Operational Reports for **DX NetOps Spectr
 
 ## Dashboards
 
-| File | Report Name | Domain |
-|---|---|---|
-| `spectrum-home.json` | Home (navigation hub) | — |
-| `spectrum-alarm-log.json` | Alarm Log | Alarm |
-| `spectrum-alarm-activity.json` | Alarm Activity by User | Alarm |
-| `spectrum-alarm-count-trend.json` | Alarm Count Trend | Alarm |
-| `spectrum-alarm-mttr.json` | Alarm MTTR | Alarm |
-| `spectrum-alarm-top-devices.json` | Top Devices by Alarm Count | Alarm |
-| `spectrum-top-alarms.json` | Top Most Common Alarms | Alarm |
-| `spectrum-alarm-detail.json` | Alarm Detail (drill-down) | Alarm |
-| `spectrum-availability.json` | Device Availability | Availability |
-| `spectrum-availability-bizhours.json` | Availability During Business Hours | Availability |
-| `spectrum-availability-class-vendor.json` | Availability by Class / Vendor | Availability |
-| `spectrum-outage-log.json` | Outage Log | Availability |
-| `spectrum-service-availability.json` | Service Availability & Health | Service |
-| `spectrum-service-summary.json` | Service Summary | Service |
-| `spectrum-service-detail.json` | Service Detail (drill-down) | Service |
-| `spectrum-current-assets.json` | Current Assets | Asset |
-| `spectrum-chassis-assets.json` | Chassis Assets | Asset |
-| `spectrum-current-ports.json` | Current Ports | Asset |
-| `spectrum-current-ports-capacity.json` | Ports Capacity | Asset |
-| `spectrum-assets-customizable.json` | Assets (Customizable) | Asset |
-| `spectrum-port-assets-customizable.json` | Port Assets (Customizable) | Asset |
-| `spectrum-event-log.json` | Event Log | Event |
-| `spectrum-change-management.json` | Change Management | Event |
-| `spectrum-device-detail.json` | Device Detail (drill-down) | — |
-| `spectrum-customer-detail.json` | Customer Detail (drill-down) | — |
+| File | Report Name | Domain | Import Doc |
+|---|---|---|---|
+| `spectrum-home.json` | Home (navigation hub) | — | [Guide](docs/import/spectrum-home.md) |
+| `spectrum-alarm-log.json` | Alarm Log | Alarm | [Guide](docs/import/spectrum-alarm-log.md) |
+| `spectrum-alarm-activity.json` | Alarm Activity by User | Alarm | [Guide](docs/import/spectrum-alarm-activity.md) |
+| `spectrum-alarm-count-trend.json` | Alarm Count Trend | Alarm | [Guide](docs/import/spectrum-alarm-count-trend.md) |
+| `spectrum-alarm-mttr.json` | Alarm MTTR | Alarm | [Guide](docs/import/spectrum-alarm-mttr.md) |
+| `spectrum-alarm-top-devices.json` | Top Devices by Alarm Count | Alarm | [Guide](docs/import/spectrum-alarm-top-devices.md) |
+| `spectrum-top-alarms.json` | Top Most Common Alarms | Alarm | [Guide](docs/import/spectrum-alarm-log.md) |
+| `spectrum-alarm-detail.json` | Alarm Detail (drill-down) | Alarm | [Guide](docs/import/spectrum-alarm-log.md) |
+| `spectrum-availability.json` | Device Availability | Availability | [Guide](docs/import/spectrum-availability.md) |
+| `spectrum-availability-bizhours.json` | Availability During Business Hours | Availability | [Guide](docs/import/spectrum-availability.md) |
+| `spectrum-availability-class-vendor.json` | Availability by Class / Vendor | Availability | [Guide](docs/import/spectrum-availability-class-vendor.md) |
+| `spectrum-outage-log.json` | Outage Log | Availability | [Guide](docs/import/spectrum-outage-log.md) |
+| `spectrum-service-availability.json` | Service Availability & Health | Service | [Guide](docs/import/spectrum-service-detail.md) |
+| `spectrum-service-summary.json` | Service Summary | Service | [Guide](docs/import/spectrum-service-summary.md) |
+| `spectrum-service-detail.json` | Service Detail (drill-down) | Service | [Guide](docs/import/spectrum-service-detail.md) |
+| `spectrum-current-assets.json` | Current Assets | Asset | [Guide](docs/import/spectrum-current-assets.md) |
+| `spectrum-chassis-assets.json` | Chassis Assets | Asset | [Guide](docs/import/spectrum-assets-customizable.md) |
+| `spectrum-current-ports.json` | Current Ports | Asset | [Guide](docs/import/spectrum-current-ports.md) |
+| `spectrum-current-ports-capacity.json` | Ports Capacity | Asset | [Guide](docs/import/spectrum-current-ports.md) |
+| `spectrum-assets-customizable.json` | Assets (Customizable) | Asset | [Guide](docs/import/spectrum-assets-customizable.md) |
+| `spectrum-port-assets-customizable.json` | Port Assets (Customizable) | Asset | [Guide](docs/import/spectrum-port-assets-customizable.md) |
+| `spectrum-event-log.json` | Event Log | Event | [Guide](docs/import/spectrum-event-log.md) |
+| `spectrum-change-management.json` | Change Management | Event | [Guide](docs/import/spectrum-change-management.md) |
+| `spectrum-device-detail.json` | Device Detail (drill-down) | — | [Guide](docs/import/spectrum-device-detail.md) |
+| `spectrum-customer-detail.json` | Customer Detail (drill-down) | — | [Guide](docs/import/spectrum-service-detail.md) |
 
 ## Deploying to a new environment
 
