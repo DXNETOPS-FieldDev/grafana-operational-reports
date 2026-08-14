@@ -19,15 +19,16 @@
         "type": "datasource",
         "label": "Data Source",
         "query": "mysql",
-        "regex": "/^Spectrum (Reporting|MySQL)$/",
-        "hide": 2,
+        "regex": "/^(mysql-spectrum-reporting|Spectrum (Reporting|MySQL))$/",
+        "hide": 0,
         "refresh": 1,
         "current": {
           "selected": true,
           "text": "Spectrum Reporting",
           "value": "RQntVjiNk"
         },
-        "options": []
+        "options": [],
+        "description": "The MySQL data source for the Spectrum reporting database. Set this to your own after importing."
       }
     ]
   },
