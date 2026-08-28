@@ -28,23 +28,23 @@
 6. **Current Port Assets (Customizable)** — Purpose: sortable wide port-asset table (port-level equivalent of #2). Conveys: total-ports/ports-up tiles + sortable table. Value: ad-hoc port inventory lookup.
 7. **Detailed Change Management** — Purpose: device lifecycle churn — additions/removals in a range. Conveys: devices-added/removed tiles + change-log table. Value: audit trail for change-control review, catches unexpected adds/removals.
 
-## Availability Reports (5)
+## Availability Reports (4)
 
 1. **Device Availability** — Purpose: per-device uptime ranking, the classic "least available" report. Conveys: fleet-availability/outages/devices-affected/downtime tiles, outages-per-day trend, downtime chart, Top-N least-available table. Value: headline reliability report, drills to Device Detail for root cause.
 2. **Outage Log** — Purpose: raw outage ledger, planned or not. Conveys: total/unplanned/planned/exempt/devices-w-outage tiles, outage table with an "ongoing" label. Value: source-of-truth event list behind the availability numbers — needed for RCA.
 3. **Availability by Class & Vendor** — Purpose: rolls availability up by model class/vendor instead of per-device. Conveys: availability-% by class chart + table with outage counts. Value: vendor scorecards — spot a whole product line underperforming.
 4. **Availability (Business Hours)** — Purpose: availability against business hours only *(Grafana-only addition, no Jasper equivalent)*. Conveys: BH-availability/BH-hours/BH-downtime tiles, Top-N least-available (BH) table. Value: fairer score for business-hours-only services — an overnight maintenance window doesn't tank it.
-5. **Service Availability & Health** — Purpose: rolls device availability up to the *service* layer — filed here even though it's really Service/SLA scope. Conveys: total-services/impaired/avg-availability tiles, Top-N worst-performing chart, health table, service-inventory (services → resources). Value: bridges infrastructure to business impact — "which customer-facing service is hurting," not just "which router is down."
 
 ## Event Reports (1)
 
 **Event Log & Top-N Events** — Purpose: consolidates the raw event stream plus both Jasper "Top-N" event reports into one dashboard. Conveys: totals tiles, events-over-time trend, Top-N-by-type chart/table, Top-N-by-device table, detailed (latest-200) log. Value: one stop for trend + type-ranking + device-ranking instead of three separate Jasper reports.
 
-## Service/SLA Reports (3)
+## Service/SLA Reports (4)
 
-1. **Customer Detail** — Purpose: per-customer drilldown — contact info + services used. Conveys: services-used tile, contact table, services-by-customer table. Value: account-management view — a customer's footprint and the right contact, fast.
-2. **Service Detail** *(drilldown)* — Purpose: per-service deep-dive from Service Availability & Health. Conveys: service info, availability/outages/customers/owners tiles, outage-details table, customers-using-this-service table, owners table. Value: ties a service to its outage history, affected customers, and owner — "who do I call, what broke."
-3. **Service Summary & Inventory** — Purpose: rolls up availability against a target %, by service and by customer, plus resource inventory. Conveys: total-services/avg-%/below-target tiles, two target-scored tables, resource inventory table. Value: SLA-adjacent scorecard (since true SLA data doesn't exist in this source) — flags services missing target.
+1. **Service Availability & Health** — Purpose: rolls device availability up to the *service* layer. Conveys: total-services/impaired/avg-availability tiles, Top-N worst-performing chart, health table, service-inventory (services → resources), and an optional **Service Health Map** — a geo-map plotting each customer site, colored by its worst current health, letting you see at a glance whether a problem is one shared service (most sites affected) or a handful of local sites. Value: bridges infrastructure to business impact — "which customer-facing service is hurting," not just "which router is down" — and the map turns that into "is this the app, or is it these specific sites."
+2. **Customer Detail** — Purpose: per-customer drilldown — contact info + services used. Conveys: services-used tile, contact table, services-by-customer table. Value: account-management view — a customer's footprint and the right contact, fast.
+3. **Service Detail** *(drilldown)* — Purpose: per-service deep-dive from Service Availability & Health. Conveys: service info, availability/outages/customers/owners tiles, outage-details table, customers-using-this-service table, owners table. Value: ties a service to its outage history, affected customers, and owner — "who do I call, what broke."
+4. **Service Summary & Inventory** — Purpose: rolls up availability against a target %, by service and by customer, plus resource inventory. Conveys: total-services/avg-%/below-target tiles, two target-scored tables, resource inventory table. Value: SLA-adjacent scorecard (since true SLA data doesn't exist in this source) — flags services missing target.
 
 ## Known gap (deliberate, not an oversight)
 

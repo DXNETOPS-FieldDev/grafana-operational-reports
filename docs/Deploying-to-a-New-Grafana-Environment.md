@@ -118,9 +118,9 @@ Operational Reports
 ├── Device Detail (drill-down)         [root]
 ├── Alarm Reports        (7 dashboards)
 ├── Asset Reports        (7 dashboards)
-├── Availability Reports (5 dashboards)
+├── Availability Reports (4 dashboards)
 ├── Event Reports        (1 dashboard)
-└── Service/SLA Reports  (3 dashboards)
+└── Service/SLA Reports  (4 dashboards)
 ```
 
 ## Step 3 (alternative) — Manual import via the UI

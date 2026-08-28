@@ -35,8 +35,7 @@
         "spectrum-availability-bizhours.json",
         "spectrum-availability-class-vendor.json",
         "spectrum-availability.json",
-        "spectrum-outage-log.json",
-        "spectrum-service-availability.json"
+        "spectrum-outage-log.json"
       ]
     },
     {
@@ -50,7 +49,8 @@
       "dashboards": [
         "spectrum-customer-detail.json",
         "spectrum-service-detail.json",
-        "spectrum-service-summary.json"
+        "spectrum-service-summary.json",
+        "spectrum-service-availability.json"
       ]
     }
   ]
