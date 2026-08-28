@@ -697,6 +697,38 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lat"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "tooltip": true,
+                  "viz": true,
+                  "legend": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Lon"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "tooltip": true,
+                  "viz": true,
+                  "legend": true
+                }
+              }
+            ]
           }
         ]
       },
@@ -723,7 +755,42 @@
         "layers": [
           {
             "type": "markers",
-            "name": "Customer Sites",
+            "name": "Services",
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "config": {
+              "style": {
+                "size": {
+                  "fixed": 8,
+                  "min": 5,
+                  "max": 15
+                },
+                "color": {
+                  "fixed": "gray"
+                },
+                "opacity": 0.3,
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12
+                }
+              },
+              "showLegend": false
+            },
+            "location": {
+              "mode": "coords",
+              "latitude": "Lat",
+              "longitude": "Lon"
+            },
+            "tooltip": true
+          },
+          {
+            "type": "markers",
+            "name": "Customer Site",
             "config": {
               "style": {
                 "size": {
@@ -763,7 +830,17 @@
           },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT cust.custName AS `Customer`, CAST(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', 1) AS DECIMAL(10,6)) AS `Latitude`, CAST(TRIM(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', -1)) AS DECIMAL(10,6)) AS `Longitude`, MAX(svc.sev_rank) AS `Health`, GROUP_CONCAT(CONCAT(svc.monName, ': ', svc.healthName) ORDER BY svc.sev_rank DESC, svc.monName SEPARATOR ' | ') AS `Services (worst to best)` FROM reporting.sm_customers cust JOIN reporting.sm_customermhs cm ON cm.custName=cust.custName AND cm.customerMH NOT IN (0,1) JOIN ( SELECT su.customerMH, m.monName, COALESCE(sh.serviceHealthName,'Up') AS healthName, CASE COALESCE(sh.serviceHealthName,'Up') WHEN 'Up' THEN 0 WHEN 'Maintenance' THEN 1 WHEN 'Slightly Degraded' THEN 2 WHEN 'Degraded' THEN 3 WHEN 'Down' THEN 4 WHEN 'Loss Of Management' THEN 4 ELSE 0 END AS sev_rank FROM reporting.sm_slmuses su JOIN reporting.sm_monitors m ON m.monitorMH=su.monitorMH AND m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE su.usesDestroyTime IS NULL AND (-1 IN ($service) OR m.monitorMH IN ($service)) ) svc ON svc.customerMH=cm.customerMH WHERE (-1 IN ($customer) OR cm.customerMH IN ($customer)) AND COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')) IS NOT NULL GROUP BY cust.custName, cust.primContLocation, cust.secContLocation"
+          "rawSql": "SELECT cust.custName AS `Customer`, CAST(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', 1) AS DECIMAL(10,6)) AS `Latitude`, CAST(TRIM(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', -1)) AS DECIMAL(10,6)) AS `Longitude`, MAX(svc.sev_rank) AS `Health` FROM reporting.sm_customers cust JOIN reporting.sm_customermhs cm ON cm.custName=cust.custName AND cm.customerMH NOT IN (0,1) JOIN ( SELECT su.customerMH, m.monName, COALESCE(sh.serviceHealthName,'Up') AS healthName, CASE COALESCE(sh.serviceHealthName,'Up') WHEN 'Up' THEN 0 WHEN 'Maintenance' THEN 1 WHEN 'Slightly Degraded' THEN 2 WHEN 'Degraded' THEN 3 WHEN 'Down' THEN 4 WHEN 'Loss Of Management' THEN 4 ELSE 0 END AS sev_rank FROM reporting.sm_slmuses su JOIN reporting.sm_monitors m ON m.monitorMH=su.monitorMH AND m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE su.usesDestroyTime IS NULL AND (-1 IN ($service) OR m.monitorMH IN ($service)) ) svc ON svc.customerMH=cm.customerMH WHERE (-1 IN ($customer) OR cm.customerMH IN ($customer)) AND COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')) IS NOT NULL GROUP BY cust.custName, cust.primContLocation, cust.secContLocation"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT m.monName AS `Service`, cust.custName AS `Customer`, COALESCE(sh.serviceHealthName,'Up') AS `Health`, CAST(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', 1) AS DECIMAL(10,6)) AS `Lat`, CAST(TRIM(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', -1)) AS DECIMAL(10,6)) AS `Lon` FROM reporting.sm_customers cust JOIN reporting.sm_customermhs cm ON cm.custName=cust.custName AND cm.customerMH NOT IN (0,1) JOIN reporting.sm_slmuses su ON su.customerMH=cm.customerMH AND su.usesDestroyTime IS NULL JOIN reporting.sm_monitors m ON m.monitorMH=su.monitorMH AND m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR cm.customerMH IN ($customer)) AND COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')) IS NOT NULL ORDER BY cust.custName, m.monName"
         }
       ]
     }
