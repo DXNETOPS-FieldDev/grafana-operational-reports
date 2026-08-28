@@ -17,12 +17,9 @@ Usage:
 import argparse
 import json
 import os
-import re
 import sys
 import urllib.error
 import urllib.request
-
-DATASOURCE_NAME_PATTERN = re.compile(r"^Spectrum (Reporting|MySQL)$")
 
 
 def api(url, path, token, method="GET", body=None):
@@ -66,9 +63,9 @@ def push_dashboard(url, token, path, folder_uid):
 
 def check_spectrum_datasource(url, token):
     datasources = api(url, "/api/datasources", token)
-    matches = [d for d in datasources if DATASOURCE_NAME_PATTERN.match(d["name"])]
+    matches = [d for d in datasources if d.get("type") == "mysql"]
     if not matches:
-        print("\nWARNING: no datasource named 'Spectrum Reporting' or 'Spectrum MySQL' found.")
+        print("\nWARNING: no MySQL datasource found.")
         print("Dashboards will show 'Data source not found' until one is created — see")
         print("docs/Deploying-to-a-New-Grafana-Environment.md.")
         return

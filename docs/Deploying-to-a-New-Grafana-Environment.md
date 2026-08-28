@@ -8,12 +8,10 @@ instance — Dev, Production, or a customer's own environment.
 
 1. **A running Grafana instance** (tested on Grafana 12.x; OSS or Enterprise
    both work).
-2. **A MySQL datasource pointing at the Spectrum `reporting` database.** The
-   dashboards resolve their datasource by **name** (via a regex match), not by
-   uid, and match `mysql-spectrum-reporting` — the name a stock **Custom
-   Dashboards** install uses — or `Spectrum Reporting` / `Spectrum MySQL`. If
-   yours is named something else, you do not need to rename it or edit any
-   JSON: every dashboard exposes a **Data Source** selector at the top.
+2. **A MySQL datasource pointing at the Spectrum `reporting` database.** Any
+   MySQL datasource works, whatever it's named — every dashboard exposes a
+   **Data Source** selector at the top, so there's no JSON to edit and nothing
+   to rename.
 3. **A Grafana service-account token** with **Editor** (or **Admin**) role —
    needed to create folders and push dashboards.
 4. Network reachability from the Grafana server to the Spectrum MySQL host
@@ -25,11 +23,8 @@ instance — Dev, Production, or a customer's own environment.
 In Grafana: **Connections → Data sources**, confirm a MySQL datasource exists
 and click **Save & Test** — it should report **"Database Connection OK."**
 
-The dashboards match a datasource named `mysql-spectrum-reporting` — the name a
-stock **Custom Dashboards** install uses — or `Spectrum Reporting` /
-`Spectrum MySQL`. **If yours is named something else you do not need to rename
-it**: every dashboard exposes a **Data Source** selector at the top, so pick
-yours there after importing.
+Any MySQL datasource works here, whatever it's named: every dashboard exposes
+a **Data Source** selector at the top, so pick yours there after importing.
 
 If it doesn't exist yet, create one:
 - Type: **MySQL**
@@ -104,8 +99,8 @@ This script:
    folders that already exist by title, so it's safe to re-run).
 2. Pushes all 25 dashboards from `dashboards/` into their assigned folders
    (`deploy/folder-map.json` — edit this if you want a different layout).
-3. Health-checks the `Spectrum Reporting`/`Spectrum MySQL` datasource and
-   reports connectivity.
+3. Health-checks whatever MySQL datasource(s) it finds and reports
+   connectivity.
 
 Expected output ends with something like:
 
@@ -132,8 +127,7 @@ Operational Reports
 
 If you can't run Python against the target instance, import manually:
 1. **Dashboards → New → Import**, upload each file from `dashboards/`.
-2. When prompted, select your `Spectrum Reporting` / `Spectrum MySQL`
-   datasource.
+2. When prompted, select your MySQL datasource — any name works.
 3. File into folders matching the tree above (optional, but keeps navigation
    links on the Home dashboard consistent).
 
@@ -153,13 +147,14 @@ was accepted, not that panels render.**
 ## Troubleshooting
 
 **Panels show "Data source not found" right after import.**
-This is expected on the *very first render* if the dashboard was authored
-against a different Grafana instance — the datasource variable's saved
-`current.value` is a uid from that other instance. Grafana re-resolves the
-variable by **name** (regex `/^Spectrum (Reporting|MySQL)$/`) as soon as the
-dashboard loads in a browser, as long as exactly one datasource matches that
-name. If it's still broken after a real browser load (not just the API), the
-datasource name doesn't match — check Step 1.
+Expected on the *very first render* — the datasource variable's saved
+`current.value` is a uid from the Grafana the dashboard was authored on, which
+doesn't exist in yours. If your Grafana has exactly one MySQL datasource,
+Grafana auto-selects it once the dashboard loads in a browser. If it has more
+than one, or the auto-select didn't take, open the **Data Source** selector at
+the top of the dashboard and pick yours — no renaming needed, any MySQL
+datasource is selectable there. If it's still broken after a real browser load
+(not just the API), confirm the datasource itself passes **Save & Test**.
 
 **`CERTIFICATE_VERIFY_FAILED` when running the deploy script.**
 Your Grafana is behind a corporate TLS-inspecting proxy and Python doesn't

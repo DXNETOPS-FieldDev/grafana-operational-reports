@@ -17,13 +17,13 @@ Ten other dashboards link into Device Detail (Alarm Detail, Alarm Log, Top-N Dev
 
 ## Datasource
 
-Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
+Reads from a MySQL datasource — any MySQL datasource in your Grafana works, whatever it's named. Every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `device` | Not if you always arrive via a drill-down link — those set it for you | *(none)* | The one device this page is about. |
 
 **Opening this page directly** (not via a link): `device` is a single-select dropdown with no "All" option, so on first load it re-queries your own inventory and selects a device from the list rather than showing "no data" — just confirm it's the device you meant, or pick a different one from the dropdown.

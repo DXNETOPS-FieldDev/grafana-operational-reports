@@ -16,3 +16,4 @@ jasper-live/
 
 # Local config
 .npmrc
+.grafana_access

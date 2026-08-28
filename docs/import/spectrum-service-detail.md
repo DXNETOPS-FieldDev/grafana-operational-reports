@@ -21,7 +21,7 @@ Service Availability & Health → Service Detail → Customer Detail → back to
 
 ## Datasource
 
-Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
+Reads from a MySQL datasource — any MySQL datasource in your Grafana works, whatever it's named. Every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
@@ -29,7 +29,7 @@ Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is 
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `service` | No — optional filter | All | Restrict to specific services. |
 | `customer` | No — optional filter | All | Restrict to a specific customer's services. |
 | `downStates` | No — optional filter | Down | Which states count as "down" (Down / Degraded / Slightly Degraded / Loss Of Management). |
@@ -39,14 +39,14 @@ Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is 
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `service` | **Yes, if opened directly** — arriving via a link sets it for you | *(re-queries your data; no "All")* | Which service this page is about. |
 
 **Customer Detail**
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `customer` | **Yes, if opened directly** — arriving via a link sets it for you | *(re-queries your data; no "All")* | Which customer this page is about. |
 | `downStates` | No — optional filter | Down | Which states count as "down" for that customer's services. |
 

@@ -19,7 +19,6 @@
         "type": "datasource",
         "label": "Data Source",
         "query": "mysql",
-        "regex": "/^(mysql-spectrum-reporting|Spectrum (Reporting|MySQL))$/",
         "hide": 0,
         "refresh": 1,
         "current": {

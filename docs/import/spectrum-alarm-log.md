@@ -21,7 +21,7 @@ Top-N Most Common Alarms → Alarm Log → Alarm Detail. Alarm Log also links to
 
 ## Datasource
 
-Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is named `mysql-spectrum-reporting`; `Spectrum Reporting` and `Spectrum MySQL` are matched too. **If yours is named something else you do not need to rename it** — every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
+Reads from a MySQL datasource — any MySQL datasource in your Grafana works, whatever it's named. Every dashboard has a **Data Source** selector at the top; pick yours there. See [Step 1 of the deploy guide](../Deploying-to-a-New-Grafana-Environment.md#step-1--verify-the-datasource) for how to create the datasource if you don't have one yet.
 
 ## Variables
 
@@ -29,7 +29,7 @@ Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is 
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `group` | No — optional filter | All | Restrict to a device group/collection. |
 | `condition` | No — optional filter | All | Restrict to Critical/Major/Minor/Maintenance. |
 | `minDuration` | No — optional filter | 300 (seconds) | Hide short-lived alarms below this duration. |
@@ -40,7 +40,7 @@ Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is 
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `alarmId` | **Yes, if opened directly** — arriving via the Alarm Log link sets it for you | *(blank)* | Which alarm to show. Blank shows nothing. |
 | `snowHost` | **Yes** | `your-servicenow-instance.example.com` (placeholder) | Hostname the "Open in ServiceNow" link points at. Set it to your own ServiceNow instance, or the link won't resolve. |
 
@@ -48,7 +48,7 @@ Reads from a MySQL datasource. On a stock **Custom Dashboards** install that is 
 
 | Variable | Must set before use? | Default | What it does |
 |---|---|---|---|
-| `datasource` | Only if your datasource has a different name — pick it from the **Data Source** selector at the top | *(matches `mysql-spectrum-reporting`, `Spectrum Reporting`, `Spectrum MySQL`)* | Which MySQL connection the panels query. |
+| `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `group` | No — optional filter | All | Restrict to a device group/collection. |
 | `condition` | No — optional filter | All | Restrict to Critical/Major/Minor/Maintenance. |
 | `topN` | No — optional filter | 10 | How many alarm types to rank. |
