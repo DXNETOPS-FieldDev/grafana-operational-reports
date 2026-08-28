@@ -19,7 +19,6 @@
         "type": "datasource",
         "label": "Data Source",
         "query": "mysql",
-        "regex": "/^(mysql-spectrum-reporting|Spectrum (Reporting|MySQL))$/",
         "hide": 0,
         "refresh": 1,
         "current": {
@@ -590,6 +589,167 @@
           "format": "table",
           "rawQuery": true,
           "rawSql": "SELECT m.monName AS `Service`, r.resourceName AS `Resource`, r.resourceTypeName AS `Type`, r.resourceModelClass AS `Class` FROM reporting.sm_monitors m JOIN reporting.sm_slmmonitors smm ON m.monitorMH=smm.monitorMH AND smm.monitorsDestroyTime IS NULL JOIN reporting.sm_resources r ON smm.resourceMH=r.resourceMH WHERE m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) AND (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR m.monitorMH IN (SELECT su.monitorMH FROM reporting.sm_slmuses su WHERE su.usesDestroyTime IS NULL AND su.customerMH IN ($customer))) ORDER BY m.monName, r.resourceName"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "Service Health Map (optional \u2014 click to expand) \u00b7 Enhancement - not included in CABI",
+      "collapsed": true,
+      "gridPos": {
+        "x": 0,
+        "y": 31,
+        "w": 24,
+        "h": 1
+      },
+      "panels": [
+        {
+          "id": 8,
+          "type": "geomap",
+          "title": "Service Health Map \u2014 by Customer Site",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${datasource}"
+          },
+          "gridPos": {
+            "x": 0,
+            "y": 32,
+            "w": 24,
+            "h": 12
+          },
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Health"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "0": {
+                            "text": "Up"
+                          },
+                          "1": {
+                            "text": "Maintenance"
+                          },
+                          "2": {
+                            "text": "Slightly Degraded"
+                          },
+                          "3": {
+                            "text": "Degraded"
+                          },
+                          "4": {
+                            "text": "Down"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "blue",
+                          "value": 1
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 2
+                        },
+                        {
+                          "color": "orange",
+                          "value": 3
+                        },
+                        {
+                          "color": "red",
+                          "value": 4
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "view": {
+              "id": "coords",
+              "lat": 39.8283,
+              "lon": -98.5795,
+              "zoom": 3
+            },
+            "controls": {
+              "showZoom": true,
+              "mouseWheelZoom": true,
+              "showAttribution": true,
+              "showScale": false,
+              "showMeasure": false,
+              "showDebug": false
+            },
+            "basemap": {
+              "type": "osm-standard",
+              "name": "Layer 0",
+              "config": {}
+            },
+            "layers": [
+              {
+                "type": "markers",
+                "name": "Customer Sites",
+                "config": {
+                  "style": {
+                    "size": {
+                      "fixed": 10,
+                      "min": 5,
+                      "max": 15
+                    },
+                    "color": {
+                      "field": "Health"
+                    },
+                    "opacity": 0.9,
+                    "symbol": {
+                      "fixed": "img/icons/marker/circle.svg",
+                      "mode": "fixed"
+                    },
+                    "textConfig": {
+                      "fontSize": 12
+                    }
+                  },
+                  "showLegend": true
+                },
+                "location": {
+                  "mode": "coords",
+                  "latitude": "Latitude",
+                  "longitude": "Longitude"
+                },
+                "tooltip": true
+              }
+            ]
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "mysql",
+                "uid": "${datasource}"
+              },
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT cust.custName AS `Customer`, CAST(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', 1) AS DECIMAL(10,6)) AS `Latitude`, CAST(TRIM(SUBSTRING_INDEX(COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')), ',', -1)) AS DECIMAL(10,6)) AS `Longitude`, MAX(CASE COALESCE(sh.serviceHealthName,'Up') WHEN 'Up' THEN 0 WHEN 'Maintenance' THEN 1 WHEN 'Slightly Degraded' THEN 2 WHEN 'Degraded' THEN 3 WHEN 'Down' THEN 4 WHEN 'Loss Of Management' THEN 4 ELSE 0 END) AS `Health` FROM reporting.sm_customers cust JOIN reporting.sm_customermhs cm ON cm.custName=cust.custName AND cm.customerMH NOT IN (0,1) JOIN reporting.sm_slmuses su ON su.customerMH=cm.customerMH AND su.usesDestroyTime IS NULL JOIN reporting.sm_monitors m ON m.monitorMH=su.monitorMH AND m.monitorType=0 AND m.monDestroyTime IS NULL AND m.monitorMH NOT IN (0,1) LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE (-1 IN ($service) OR m.monitorMH IN ($service)) AND (-1 IN ($customer) OR cm.customerMH IN ($customer)) AND COALESCE(NULLIF(cust.primContLocation,''), NULLIF(cust.secContLocation,'')) IS NOT NULL GROUP BY cust.custName, cust.primContLocation, cust.secContLocation"
+            }
+          ]
         }
       ]
     }
