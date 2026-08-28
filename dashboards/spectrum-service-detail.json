@@ -83,7 +83,7 @@
           },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT m.monName AS `Service`, m.monCriticality AS `Criticality`, COALESCE(sh.serviceHealthName,'Up') AS `Current Health`, m.monDescription AS `Description (geo)` FROM reporting.sm_monitors m LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE m.monitorMH=$service LIMIT 1"
+          "rawSql": "SELECT m.monName AS `Service`, m.monCriticality AS `Criticality`, COALESCE(sh.serviceHealthName,'Up') AS `Current Health` FROM reporting.sm_monitors m LEFT JOIN reporting.sm_servicehealth sh ON sh.serviceHealth=(SELECT mox.serviceHealth FROM reporting.sm_monitoroutages mox WHERE mox.monOutageID=(SELECT COALESCE(MAX(CASE WHEN mo3.serviceHealth!=10 THEN mo3.monOutageID END), MAX(mo3.monOutageID)) FROM reporting.sm_monitormaps mm3 JOIN reporting.sm_monitoroutages mo3 ON mm3.monOutageID=mo3.monOutageID WHERE mm3.monitorMH=m.monitorMH)) WHERE m.monitorMH=$service LIMIT 1"
         }
       ]
     },
