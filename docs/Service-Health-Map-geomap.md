@@ -15,6 +15,21 @@ not per service — colored by that customer's worst current health across
 whichever services are in scope. It respects the dashboard's existing
 **Service** and **Customer** filters, exactly like every other panel here.
 
+**Hover a pin to see why it's that color.** The tooltip has two tabs:
+
+- **Customer Site** (left, shown by default) — the customer name and its
+  worst current health, matching the pin's color and the **Current Health**
+  wording used in the Service Availability & Health table above (Up /
+  Maintenance / Slightly Degraded / Degraded / Down / Loss Of Management).
+- **Services** (right) — every service used at that site, each with its own
+  health, worst first. This answers the question the map's color alone can't:
+  *which* service is dragging this site down. If a site has more than one
+  service, they list as an expandable group on this tab.
+
+There's no separate service picker for the map — it uses the same **Service**
+dropdown at the top of the dashboard that every other panel on this page
+does.
+
 **It is a Grafana enhancement — it is NOT part of the CABI Reports.** There is
 no geo-map in the CABI (CA Business Intelligence / Operational Reports) set;
 this is an additive capability Grafana provides that the legacy CABI reports
@@ -141,3 +156,10 @@ in-scope services (Up is best, Down/Loss of Management tied for worst):
   scoped by the dashboard's existing Service/Customer filters. Query joins
   `sm_customers` → `sm_customermhs` → `sm_slmuses` → `sm_monitors`, the same
   customer↔service link every other panel on this dashboard already uses.
+- **Reviewer refinement pass** (2026-08-28, same day): first review round
+  flagged the legend as reading like a raw impact count rather than the same
+  health vocabulary as the **Current Health** column above it — fixed by
+  mapping the pin color to that same Up/Maintenance/Slightly
+  Degraded/Degraded/Down enum. Second round asked to see which service is
+  behind a red pin without leaving the map — added the **Services** tab
+  described above, sorted worst-to-best, to the right of **Customer Site**.
