@@ -178,7 +178,7 @@
           },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT e.entity_name AS `Device`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.set_time AS `Set Time`, ai.ack_time AS `Ack Time`, ai.clear_time AS `Clear Time`, NULLIF(ai.clear_user,'') AS `Cleared By`, NULLIF(SUBSTRING_INDEX(ai.set_troubleticket_id,'Ticket Number ',-1),'') AS `Ticket No`, ai.occurrences AS `Occurrences`, ai.alarm_id AS `Alarm ID`, SUBSTRING_INDEX(SUBSTRING_INDEX(ai.set_troubleticket_id,'sys_id%3D',-1),'''>',1) AS `Ticket sys_id` FROM reporting.alarminfo ai JOIN reporting.entity e ON e.current_model_key=ai.model_key JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.alarm_id='$alarmId' LIMIT 1"
+          "rawSql": "SELECT e.entity_name AS `Device`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.set_time AS `Set Time`, ai.ack_time AS `Ack Time`, ai.clear_time AS `Clear Time`, NULLIF(ai.clear_user,'') AS `Cleared By`, NULLIF(SUBSTRING_INDEX(ai.set_troubleticket_id,'Ticket Number ',-1),'') AS `Ticket No`, ai.occurrences AS `Occurrences`, ai.alarm_id AS `Alarm ID`, SUBSTRING_INDEX(SUBSTRING_INDEX(ai.set_troubleticket_id,'sys_id%3D',-1),'''>',1) AS `Ticket sys_id` FROM reporting.alarminfo ai LEFT JOIN reporting.interfacemodel im ON im.model_key=ai.model_key JOIN reporting.entity e ON e.current_model_key=COALESCE(im.device_model_key, ai.model_key) JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.alarm_id='$alarmId' LIMIT 1"
         }
       ]
     }

@@ -37,8 +37,8 @@
           "type": "mysql",
           "uid": "${datasource}"
         },
-        "query": "SELECT DISTINCT entity_name FROM reporting.entity WHERE entity_name IS NOT NULL ORDER BY 1",
-        "definition": "SELECT DISTINCT entity_name FROM reporting.entity WHERE entity_name IS NOT NULL ORDER BY 1",
+        "query": "SELECT DISTINCT e.entity_name FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE e.entity_name IS NOT NULL ORDER BY 1",
+        "definition": "SELECT DISTINCT e.entity_name FROM reporting.entity e JOIN reporting.devicemodel dm ON dm.model_key=e.current_model_key WHERE e.entity_name IS NOT NULL ORDER BY 1",
         "multi": false,
         "includeAll": false,
         "refresh": 1,
