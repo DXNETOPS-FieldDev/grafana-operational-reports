@@ -45,6 +45,32 @@
         "sort": 1,
         "current": {},
         "options": []
+      },
+      {
+        "name": "showSubcomponents",
+        "type": "custom",
+        "label": "Show Subcomponents",
+        "description": "Include alarms raised by this device's interfaces/subcomponents, not just the device itself (matches Spectrum OneClick behavior)",
+        "query": "No : 0,Yes : 1",
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "No",
+          "value": "0"
+        },
+        "options": [
+          {
+            "text": "No",
+            "value": "0",
+            "selected": true
+          },
+          {
+            "text": "Yes",
+            "value": "1",
+            "selected": false
+          }
+        ]
       }
     ]
   },
@@ -247,7 +273,7 @@
           },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT COUNT(*) AS alarms FROM reporting.entity e JOIN reporting.alarminfo ai ON ai.model_key=e.current_model_key WHERE e.entity_name='$device' AND $__timeFilter(ai.set_time)"
+          "rawSql": "SELECT COUNT(*) AS alarms FROM reporting.entity e JOIN reporting.alarminfo ai ON (ai.model_key=e.current_model_key OR ($showSubcomponents=1 AND ai.model_key IN (SELECT model_key FROM reporting.interfacemodel WHERE device_model_key=e.current_model_key))) WHERE e.entity_name='$device' AND $__timeFilter(ai.set_time)"
         }
       ]
     },
@@ -405,7 +431,7 @@
           },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT ai.set_time AS `Start Time`, ai.clear_time AS `End Time`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.alarm_id AS `Alarm Unique ID` FROM reporting.entity e JOIN reporting.alarminfo ai ON ai.model_key=e.current_model_key JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE e.entity_name='$device' AND $__timeFilter(ai.set_time) ORDER BY ai.set_time DESC LIMIT 200"
+          "rawSql": "SELECT ai.set_time AS `Start Time`, ai.clear_time AS `End Time`, ac.condition_name AS `Condition`, im.port_desc AS `Subcomponent`, at.title AS `Alarm Cause`, ai.alarm_id AS `Alarm Unique ID` FROM reporting.entity e JOIN reporting.alarminfo ai ON (ai.model_key=e.current_model_key OR ($showSubcomponents=1 AND ai.model_key IN (SELECT model_key FROM reporting.interfacemodel WHERE device_model_key=e.current_model_key))) LEFT JOIN reporting.interfacemodel im ON im.model_key=ai.model_key JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE e.entity_name='$device' AND $__timeFilter(ai.set_time) ORDER BY ai.set_time DESC LIMIT 200"
         }
       ]
     },
