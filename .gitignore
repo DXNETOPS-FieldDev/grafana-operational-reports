@@ -10,6 +10,7 @@ skills-lock.json
 dev-backups/
 jasper-live/
 *.png
+!docs/screenshots/*.png
 
 # macOS
 .DS_Store

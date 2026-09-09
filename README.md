@@ -12,6 +12,8 @@ Grafana dashboards migrated from CABI Operational Reports for **DX NetOps Spectr
 
 ## Dashboards
 
+See [`docs/Operational-Reports-Catalog.md`](docs/Operational-Reports-Catalog.md) for a description **and screenshot** of every dashboard below.
+
 | File | Report Name | Domain | Import Doc |
 |---|---|---|---|
 | `spectrum-home.json` | Home (navigation hub) | — | [Guide](docs/import/spectrum-home.md) |
