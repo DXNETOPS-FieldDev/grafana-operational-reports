@@ -14,33 +14,33 @@ Grafana dashboards migrated from CABI Operational Reports for **DX NetOps Spectr
 
 See [`docs/Operational-Reports-Catalog.md`](docs/Operational-Reports-Catalog.md) for a description **and screenshot** of every dashboard below.
 
-| File | Report Name | Domain | Import Doc |
+| Report Name | Domain | Screenshot | Import Doc |
 |---|---|---|---|
-| `spectrum-home.json` | Home (navigation hub) | — | [Guide](docs/import/spectrum-home.md) |
-| `spectrum-alarm-log.json` | Alarm Log | Alarm | [Guide](docs/import/spectrum-alarm-log.md) |
-| `spectrum-alarm-activity.json` | Alarm Activity by User | Alarm | [Guide](docs/import/spectrum-alarm-activity.md) |
-| `spectrum-alarm-count-trend.json` | Alarm Count Trend | Alarm | [Guide](docs/import/spectrum-alarm-count-trend.md) |
-| `spectrum-alarm-mttr.json` | Alarm MTTR | Alarm | [Guide](docs/import/spectrum-alarm-mttr.md) |
-| `spectrum-alarm-top-devices.json` | Top Devices by Alarm Count | Alarm | [Guide](docs/import/spectrum-alarm-top-devices.md) |
-| `spectrum-top-alarms.json` | Top Most Common Alarms | Alarm | [Guide](docs/import/spectrum-alarm-log.md) |
-| `spectrum-alarm-detail.json` | Alarm Detail (drill-down) | Alarm | [Guide](docs/import/spectrum-alarm-log.md) |
-| `spectrum-availability.json` | Device Availability | Availability | [Guide](docs/import/spectrum-availability.md) |
-| `spectrum-availability-bizhours.json` | Availability During Business Hours | Availability | [Guide](docs/import/spectrum-availability.md) |
-| `spectrum-availability-class-vendor.json` | Availability by Class / Vendor | Availability | [Guide](docs/import/spectrum-availability-class-vendor.md) |
-| `spectrum-outage-log.json` | Outage Log | Availability | [Guide](docs/import/spectrum-outage-log.md) |
-| `spectrum-service-availability.json` | Service Availability & Health | Service | [Guide](docs/import/spectrum-service-detail.md) |
-| `spectrum-service-summary.json` | Service Summary | Service | [Guide](docs/import/spectrum-service-summary.md) |
-| `spectrum-service-detail.json` | Service Detail (drill-down) | Service | [Guide](docs/import/spectrum-service-detail.md) |
-| `spectrum-current-assets.json` | Current Assets | Asset | [Guide](docs/import/spectrum-current-assets.md) |
-| `spectrum-chassis-assets.json` | Chassis Assets | Asset | [Guide](docs/import/spectrum-assets-customizable.md) |
-| `spectrum-current-ports.json` | Current Ports | Asset | [Guide](docs/import/spectrum-current-ports.md) |
-| `spectrum-current-ports-capacity.json` | Ports Capacity | Asset | [Guide](docs/import/spectrum-current-ports.md) |
-| `spectrum-assets-customizable.json` | Assets (Customizable) | Asset | [Guide](docs/import/spectrum-assets-customizable.md) |
-| `spectrum-port-assets-customizable.json` | Port Assets (Customizable) | Asset | [Guide](docs/import/spectrum-port-assets-customizable.md) |
-| `spectrum-event-log.json` | Event Log | Event | [Guide](docs/import/spectrum-event-log.md) |
-| `spectrum-change-management.json` | Change Management | Event | [Guide](docs/import/spectrum-change-management.md) |
-| `spectrum-device-detail.json` | Device Detail (drill-down) | — | [Guide](docs/import/spectrum-device-detail.md) |
-| `spectrum-customer-detail.json` | Customer Detail (drill-down) | — | [Guide](docs/import/spectrum-service-detail.md) |
+| Home (navigation hub) | — | [View](docs/Operational-Reports-Catalog.md#spectrum-home) | [Guide](docs/import/spectrum-home.md) |
+| Alarm Log | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-alarm-log) | [Guide](docs/import/spectrum-alarm-log.md) |
+| Alarm Activity by User | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-alarm-activity) | [Guide](docs/import/spectrum-alarm-activity.md) |
+| Alarm Count Trend | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-alarm-count-trend) | [Guide](docs/import/spectrum-alarm-count-trend.md) |
+| Alarm MTTR | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-alarm-mttr) | [Guide](docs/import/spectrum-alarm-mttr.md) |
+| Top Devices by Alarm Count | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-alarm-top-devices) | [Guide](docs/import/spectrum-alarm-top-devices.md) |
+| Top Most Common Alarms | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-top-alarms) | [Guide](docs/import/spectrum-alarm-log.md) |
+| Alarm Detail (drill-down) | Alarm | [View](docs/Operational-Reports-Catalog.md#spectrum-alarm-detail) | [Guide](docs/import/spectrum-alarm-log.md) |
+| Device Availability | Availability | [View](docs/Operational-Reports-Catalog.md#spectrum-availability) | [Guide](docs/import/spectrum-availability.md) |
+| Availability During Business Hours | Availability | [View](docs/Operational-Reports-Catalog.md#spectrum-avail-bizhours) | [Guide](docs/import/spectrum-availability.md) |
+| Availability by Class / Vendor | Availability | [View](docs/Operational-Reports-Catalog.md#spectrum-avail-class-vendor) | [Guide](docs/import/spectrum-availability-class-vendor.md) |
+| Outage Log | Availability | [View](docs/Operational-Reports-Catalog.md#spectrum-outage-log) | [Guide](docs/import/spectrum-outage-log.md) |
+| Service Availability & Health | Service | [View](docs/Operational-Reports-Catalog.md#spectrum-service-availability) | [Guide](docs/import/spectrum-service-detail.md) |
+| Service Summary | Service | [View](docs/Operational-Reports-Catalog.md#spectrum-service-summary) | [Guide](docs/import/spectrum-service-summary.md) |
+| Service Detail (drill-down) | Service | [View](docs/Operational-Reports-Catalog.md#spectrum-service-detail) | [Guide](docs/import/spectrum-service-detail.md) |
+| Current Assets | Asset | [View](docs/Operational-Reports-Catalog.md#spectrum-current-assets) | [Guide](docs/import/spectrum-current-assets.md) |
+| Chassis Assets | Asset | [View](docs/Operational-Reports-Catalog.md#spectrum-chassis-assets) | [Guide](docs/import/spectrum-assets-customizable.md) |
+| Current Ports | Asset | [View](docs/Operational-Reports-Catalog.md#spectrum-current-ports) | [Guide](docs/import/spectrum-current-ports.md) |
+| Ports Capacity | Asset | [View](docs/Operational-Reports-Catalog.md#spectrum-current-ports-capacity) | [Guide](docs/import/spectrum-current-ports.md) |
+| Assets (Customizable) | Asset | [View](docs/Operational-Reports-Catalog.md#spectrum-assets-customizable) | [Guide](docs/import/spectrum-assets-customizable.md) |
+| Port Assets (Customizable) | Asset | [View](docs/Operational-Reports-Catalog.md#spectrum-port-assets-customizable) | [Guide](docs/import/spectrum-port-assets-customizable.md) |
+| Event Log | Event | [View](docs/Operational-Reports-Catalog.md#spectrum-event-log) | [Guide](docs/import/spectrum-event-log.md) |
+| Change Management | Event | [View](docs/Operational-Reports-Catalog.md#spectrum-change-management) | [Guide](docs/import/spectrum-change-management.md) |
+| Device Detail (drill-down) | — | [View](docs/Operational-Reports-Catalog.md#spectrum-device-detail) | [Guide](docs/import/spectrum-device-detail.md) |
+| Customer Detail (drill-down) | — | [View](docs/Operational-Reports-Catalog.md#spectrum-customer-detail) | [Guide](docs/import/spectrum-service-detail.md) |
 
 ## Deploying to a new environment
 
