@@ -159,6 +159,13 @@ Purpose: availability against business hours only *(Grafana-only addition, no Ja
 
 Purpose: consolidates the raw event stream plus both Jasper "Top-N" event reports into one dashboard. Conveys: totals tiles, events-over-time trend, Top-N-by-type chart/table, Top-N-by-device table, detailed (latest-200) log. Value: one stop for trend + type-ranking + device-ranking instead of three separate Jasper reports.
 
+> **Time range:** this one is the heaviest report in the set — `reporting.event` holds ~23M rows.
+> Measured 2026-09-22: the default **24h** renders all 8 panels in ~13s, and **7d** in ~14s. At
+> **30d** the four Top-N/detail panels time out, and at 90d most of the dashboard does. The
+> totals tiles and the trend keep working at any range because they are single-table counts; it
+> is the Top-N joins and the latest-200 log that don't. Widen the range deliberately, and expect
+> those four to drop out beyond about a week.
+
 ## Service/SLA Reports (4)
 
 <a id="spectrum-service-availability"></a>
