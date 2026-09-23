@@ -42,7 +42,7 @@ Reads from a MySQL datasource — any MySQL datasource in your Grafana works, wh
 |---|---|---|---|
 | `datasource` | No — pick it from the **Data Source** selector at the top, whatever it's named | *(any MySQL datasource in your Grafana)* | Which MySQL connection the panels query. |
 | `alarmId` | **Yes, if opened directly** — arriving via the Alarm Log link sets it for you | *(blank)* | Which alarm to show. Blank shows nothing. |
-| `snowHost` | **Yes** | `your-servicenow-instance.example.com` (placeholder) | Hostname the "Open in ServiceNow" link points at. Set it to your own ServiceNow instance, or the link won't resolve. |
+| `snowHost` | **Usually no** | *(blank)* | Optional fallback host for the ticket link. Where Spectrum stored the full ServiceNow URL in the alarm's trouble-ticket field, the link is built from **that** and this is ignored. It is only used for alarms whose trouble-ticket field holds a bare ticket number (7 of 33 ticketed alarms on our reference estate) — set it and those link by ticket number; leave it blank and they simply get no link. |
 
 **Top-N Most Common Alarms**
 
@@ -60,7 +60,7 @@ Reads from a MySQL datasource — any MySQL datasource in your Grafana works, wh
 | "Data source not found" right after import | Loud | The saved datasource value is a uid from a different Grafana | Pick yours from the **Data Source** selector at the top of the dashboard |
 | Every panel says "No data" | Quiet | Datasource name doesn't match, or wrong database | Confirm **Save & Test** passes and it points at the `reporting` database |
 | Alarm Detail is blank when opened directly | Quiet | `alarmId` is empty — it's a drill-down-only field | Open it via a link from Alarm Log, or set `alarmId` manually |
-| "Open in ServiceNow" link goes to the wrong place, or 404s | Cosmetic but real | `snowHost` is still the placeholder value | Set it to your own ServiceNow host |
+| A ticket number shows but isn't a working link | Quiet | That alarm's trouble-ticket field holds a bare number, with no URL for the link to be built from | Set `snowHost` to your ServiceNow host; the link is then built by ticket number |
 | Counts differ from what you expected for a given day | Quiet | Database timestamps are UTC; the dashboard defaults to your browser's local timezone | Check the time range against UTC before assuming a data problem |
 
 ## Safe to change by hand

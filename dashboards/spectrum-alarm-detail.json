@@ -43,19 +43,20 @@
       {
         "name": "snowHost",
         "type": "textbox",
-        "label": "ServiceNow Host",
-        "query": "your-servicenow-instance.example.com",
+        "label": "ServiceNow Host (optional)",
+        "query": "",
         "current": {
-          "text": "your-servicenow-instance.example.com",
-          "value": "your-servicenow-instance.example.com"
+          "text": "",
+          "value": ""
         },
         "options": [
           {
-            "text": "your-servicenow-instance.example.com",
-            "value": "your-servicenow-instance.example.com",
+            "text": "",
+            "value": "",
             "selected": true
           }
-        ]
+        ],
+        "description": "Only needed for alarms whose trouble-ticket field holds a bare ticket number. Where Spectrum stored the full ServiceNow URL, the link is built from that and this is ignored. Left empty, those bare-number rows simply get no link."
       }
     ]
   },
@@ -145,7 +146,7 @@
                 "value": [
                   {
                     "title": "Open ticket ${__value.text}",
-                    "url": "https://${snowHost}/nav_to.do?uri=incident.do?sys_id=${__data.fields[\"Ticket sys_id\"]}",
+                    "url": "${__data.fields[\"Ticket URL\"]}",
                     "targetBlank": true
                   }
                 ]
@@ -155,7 +156,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Ticket sys_id"
+              "options": "Ticket URL"
             },
             "properties": [
               {
@@ -178,7 +179,7 @@
           },
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT e.entity_name AS `Device`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.set_time AS `Set Time`, ai.ack_time AS `Ack Time`, ai.clear_time AS `Clear Time`, NULLIF(ai.clear_user,'') AS `Cleared By`, NULLIF(SUBSTRING_INDEX(ai.set_troubleticket_id,'Ticket Number ',-1),'') AS `Ticket No`, ai.occurrences AS `Occurrences`, ai.alarm_id AS `Alarm ID`, SUBSTRING_INDEX(SUBSTRING_INDEX(ai.set_troubleticket_id,'sys_id%3D',-1),'''>',1) AS `Ticket sys_id` FROM reporting.alarminfo ai LEFT JOIN reporting.interfacemodel im ON im.model_key=ai.model_key JOIN reporting.entity e ON e.current_model_key=COALESCE(im.device_model_key, ai.model_key) JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.alarm_id='$alarmId' LIMIT 1"
+          "rawSql": "SELECT e.entity_name AS `Device`, ac.condition_name AS `Condition`, at.title AS `Alarm Cause`, ai.set_time AS `Set Time`, ai.ack_time AS `Ack Time`, ai.clear_time AS `Clear Time`, NULLIF(ai.clear_user,'') AS `Cleared By`, NULLIF(SUBSTRING_INDEX(ai.set_troubleticket_id,'Ticket Number ',-1),'') AS `Ticket No`, ai.occurrences AS `Occurrences`, ai.alarm_id AS `Alarm ID`, CASE WHEN ai.set_troubleticket_id LIKE '%sys_id%3D%' THEN REPLACE(REPLACE(REPLACE(REPLACE(SUBSTRING_INDEX(ai.set_troubleticket_id,'''>',1),'%3A',':'),'%2F','/'),'%3F','?'),'%3D','=') WHEN NULLIF('$snowHost','') IS NOT NULL THEN CONCAT('https://','$snowHost','/nav_to.do?uri=incident.do?sysparm_query=number=',SUBSTRING_INDEX(ai.set_troubleticket_id,'Ticket Number ',-1)) ELSE NULL END AS `Ticket URL` FROM reporting.alarminfo ai LEFT JOIN reporting.interfacemodel im ON im.model_key=ai.model_key JOIN reporting.entity e ON e.current_model_key=COALESCE(im.device_model_key, ai.model_key) JOIN reporting.alarmcondition ac ON ac.condition_id=ai.condition_id JOIN reporting.alarmtitle at ON at.alarm_title_id=ai.alarm_title_id WHERE ai.alarm_id='$alarmId' LIMIT 1"
         }
       ]
     }
