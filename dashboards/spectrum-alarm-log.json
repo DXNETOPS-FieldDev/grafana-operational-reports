@@ -719,7 +719,7 @@
                 "value": [
                   {
                     "title": "Alarm detail",
-                    "url": "/d/spectrum-alarm-detail/spectrum-alarm-detail?var-alarmId=${__data.fields[\"Alarm Unique ID\"]}"
+                    "url": "/d/spectrum-alarm-detail/spectrum-alarm-detail?var-alarmId=${__data.fields[\"Alarm Unique ID\"]}&${__url_time_range}"
                   }
                 ]
               }
